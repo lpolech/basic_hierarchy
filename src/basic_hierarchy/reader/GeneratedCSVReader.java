@@ -28,7 +28,7 @@ public class GeneratedCSVReader implements DataReader {
 	 * @see interfaces.DataReader#load(java.lang.String)
 	 */
 	@Override
-	public Hierarchy load(String filePath, boolean withClassAttribute, boolean fillBreathGaps) {
+	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreathGaps) {
 		//REFACTOR instead of nodes and AdditionalNodes data structures we could use one or more hash maps
 		//REFACTOR skip nodes' elements containing "gen" prefix and assume that every ID prefix always begins with "gen"
 		File inputFile = new File(filePath);
@@ -54,28 +54,29 @@ public class GeneratedCSVReader implements DataReader {
 				
 				if(numberOfDataDimensions == Integer.MIN_VALUE)
 				{
-					 if(lineValues.length < (withClassAttribute? 3 : 2))
+					 if(lineValues.length < 2 + (withClassAttribute? 1 : 0) + (withInstancesNameAttribute? 1 : 0))
 					 {
-						 System.err.println("Input data not formatted correctly, each line should contain " +
-						 		"at least a node id and a value (and optionally class attribute). Line: " + inputLine + "\n");
+						 System.err.println("Input data not formatted correctly, each line should contain " 
+								+ "at least a node id and a value (and optionally class attribute and/or instance name). "
+						 		+ "Line: " + inputLine + "\n");
 						 System.exit(1);
 					 }
-					 numberOfDataDimensions = lineValues.length - (withClassAttribute? 2 : 1);
+					 numberOfDataDimensions = lineValues.length - 1 - (withClassAttribute? 1 : 0) - (withInstancesNameAttribute? 1 : 0);
 				}
 				
-				if(lineValues.length != numberOfDataDimensions + (withClassAttribute? 2 : 1))
+				if(lineValues.length != numberOfDataDimensions + 1 + (withClassAttribute? 1 : 0) + (withInstancesNameAttribute? 1 : 0))
 				{
 					System.err.println("Input data not formatted corectly, each line should contain a node id " +
 							" and " + numberOfDataDimensions + " data values. Line: " + inputLine + "\n");
 					System.exit(1);
 				}
 				
-				double[] values = new double[lineValues.length-(withClassAttribute? 2 : 1)];
-				for(int j = 0; j < lineValues.length - (withClassAttribute? 2 : 1); j++)
+				double[] values = new double[lineValues.length- 1 - (withClassAttribute? 1 : 0) - (withInstancesNameAttribute? 1 : 0)];
+				for(int j = 0; j < lineValues.length - 1 - (withClassAttribute? 1 : 0) - (withInstancesNameAttribute? 1 : 0); j++)
 				{
 					try
 					{
-						values[j] = Double.parseDouble(lineValues[j + (withClassAttribute? 2 : 1)]);
+						values[j] = Double.parseDouble(lineValues[j + 1 + (withClassAttribute? 1 : 0) + (withInstancesNameAttribute? 1 : 0)]);
 					}
 					catch(NumberFormatException e)
 					{
@@ -99,6 +100,12 @@ public class GeneratedCSVReader implements DataReader {
 					}
 				}
 				
+				String instanceNameAttrib = null;
+				if(withInstancesNameAttribute)
+				{
+					instanceNameAttrib = lineValues[1 + (withClassAttribute? 1 : 0)];
+				}
+				
 				//assuming that node's instances are grouped in input file
 				//REFACTOR: below could the binary-search be utilised with sorting by ID-comparator
 				//boolean nodeExist = !nodes.isEmpty() && nodes.get(nodes.size()-1).getId().equalsIgnoreCase(lineValues[0]);
@@ -115,13 +122,13 @@ public class GeneratedCSVReader implements DataReader {
 				if(nodeExist)
 				{
 					//nodes.get(nodes.size()-1).addInstance(new BasicInstance(nodes.get(nodes.size()-1).getId(), values, classAttrib));
-					nodes.get(nodeIndex).addInstance(new BasicInstance(nodes.get(nodeIndex).getId(), values, classAttrib));
+					nodes.get(nodeIndex).addInstance(new BasicInstance(instanceNameAttrib, nodes.get(nodeIndex).getId(), values, classAttrib));
 					numberOfInstances++;
 				}
 				else
 				{
 					BasicNode nodeToAdd = new BasicNode(lineValues[0], null, new LinkedList<Node>(), new LinkedList<Instance>());
-					nodeToAdd.addInstance(new BasicInstance(nodeToAdd.getId(), values, classAttrib));
+					nodeToAdd.addInstance(new BasicInstance(instanceNameAttrib, nodeToAdd.getId(), values, classAttrib));
 					numberOfInstances++;
 					nodes.add(nodeToAdd);
 					if(root == null && lineValues[0].equalsIgnoreCase(Constants.ROOT_ID))

@@ -3,12 +3,14 @@ package basic_hierarchy.implementation;
 import basic_hierarchy.interfaces.Instance;
 
 public class BasicInstance implements Instance {
+	private String instanceName;
 	private double[] data;
 	private String nodeId;
 	private String trueClass;
 	
-	public BasicInstance(String nodeId, double[] data, String trueClass)
+	public BasicInstance(String instanceName, String nodeId, double[] data, String trueClass)
 	{
+		this.instanceName = instanceName;
 		this.nodeId = nodeId;				
 		this.data = data;
 		this.trueClass = trueClass;
@@ -25,6 +27,10 @@ public class BasicInstance implements Instance {
 	@Override
 	public String getTrueClass() {
 		return trueClass;
+	}
+	@Override
+	public String getInstanceName() {
+		return instanceName;
 	}
 	@Override
 	public void setNodeId(String nodeId) {

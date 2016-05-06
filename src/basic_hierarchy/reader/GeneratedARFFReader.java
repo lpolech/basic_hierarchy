@@ -19,7 +19,7 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class GeneratedARFFReader implements DataReader {
 
 	@Override
-	public Hierarchy load(String filePath, boolean withClassAttribute, boolean fillBreathGaps) {
+	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreathGaps) {
 		File inputFile = new File(filePath);
 		if(!inputFile.exists() && inputFile.isDirectory())
 		{
@@ -56,6 +56,10 @@ public class GeneratedARFFReader implements DataReader {
 			numberOfDimensions -= 1;
 		}
 		
+		if(withInstancesNameAttribute)
+		{
+			numberOfDimensions -= 1;
+		}
 		
 		for(int i = 0; i < data.numInstances(); i++)
 		{
@@ -75,6 +79,12 @@ public class GeneratedARFFReader implements DataReader {
 				}
 			}
 			
+			String instanceNameAttrib = null;
+			if(withInstancesNameAttribute)
+			{
+				instanceNameAttrib = inst.stringValue(Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + (withClassAttribute? 1 : 0));
+			}
+			
 			//assuming that node's instances are grouped in input file
 			//REFACTOR: below could the binary-search be utilised with sorting by ID-comparator
 			
@@ -84,12 +94,20 @@ public class GeneratedARFFReader implements DataReader {
 			int instDataIndex = 0;
 			for(int j = 0; j < inst.numAttributes(); j++)
 			{
-				if(j != Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE
-						&& j != Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
-				{
-					instData[instDataIndex] = inst.value(j);
-					instDataIndex++;
-				}
+				if(j == Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE)
+					continue;
+				
+				if(withClassAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
+					continue;
+				
+				if(withClassAttribute && withInstancesNameAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + 1)
+					continue;
+				
+				if(!withClassAttribute && withInstancesNameAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
+					continue;
+				
+				instData[instDataIndex] = inst.value(j);
+				instDataIndex++;
 			}
 			
 			boolean nodeExist = false;
@@ -104,14 +122,14 @@ public class GeneratedARFFReader implements DataReader {
 			}
 			if(nodeExist)
 			{
-				nodes.get(nodeIndex).addInstance(new BasicInstance(nodes.get(nodeIndex).getId(), instData, classAttrib));
+				nodes.get(nodeIndex).addInstance(new BasicInstance(instanceNameAttrib, nodes.get(nodeIndex).getId(), instData, classAttrib));
 				numberOfInstances++;
 			}
 			else
 			{
 				BasicNode nodeToAdd = new BasicNode(assignClass, null, new LinkedList<Node>(),
 						new LinkedList<basic_hierarchy.interfaces.Instance>());
-				nodeToAdd.addInstance(new BasicInstance(nodeToAdd.getId(), instData, classAttrib));
+				nodeToAdd.addInstance(new BasicInstance(instanceNameAttrib, nodeToAdd.getId(), instData, classAttrib));
 				numberOfInstances++;
 				nodes.add(nodeToAdd);
 				if(root == null && assignClass.equalsIgnoreCase(Constants.ROOT_ID))
