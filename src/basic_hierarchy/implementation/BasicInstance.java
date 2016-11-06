@@ -2,39 +2,50 @@ package basic_hierarchy.implementation;
 
 import basic_hierarchy.interfaces.Instance;
 
-public class BasicInstance implements Instance {
+
+public class BasicInstance implements Instance
+{
 	private String instanceName;
 	private double[] data;
-	private String nodeId;
+	private String groupId;
 	private String trueClass;
-	
-	public BasicInstance(String instanceName, String nodeId, double[] data, String trueClass)
+
+
+	public BasicInstance( String instanceName, String groupId, double[] data, String trueClass )
 	{
 		this.instanceName = instanceName;
-		this.nodeId = nodeId;				
+		this.groupId = groupId;
 		this.data = data;
 		this.trueClass = trueClass;
 	}
+
 	@Override
-	public String getNodeId() {
-		return nodeId;
+	public String getGroupId()
+	{
+		return groupId;
 	}
 
 	@Override
-	public double[] getData() {
+	public double[] getData()
+	{
 		return data;
 	}
+
 	@Override
-	public String getTrueClass() {
+	public String getTrueClass()
+	{
 		return trueClass;
 	}
+
 	@Override
-	public String getInstanceName() {
+	public String getInstanceName()
+	{
 		return instanceName;
 	}
+
 	@Override
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-		
+	public void setGroupId( String groupId )
+	{
+		this.groupId = groupId;
 	}
 }

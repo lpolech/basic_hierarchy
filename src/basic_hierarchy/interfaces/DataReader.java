@@ -1,6 +1,11 @@
 package basic_hierarchy.interfaces;
 
-public interface DataReader {
-	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute,
-			boolean fillBreathGaps);
+public interface DataReader
+{
+	public Hierarchy load(
+		String filePath,
+		boolean withInstancesNameAttribute,
+		boolean withClassAttribute,
+		boolean fillBreadthGaps
+	);
 }
