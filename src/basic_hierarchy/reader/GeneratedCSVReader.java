@@ -2,11 +2,12 @@ package basic_hierarchy.reader;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import basic_hierarchy.common.Constants;
@@ -17,7 +18,6 @@ import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.interfaces.DataReader;
 import basic_hierarchy.interfaces.Group;
 import basic_hierarchy.interfaces.Hierarchy;
-import basic_hierarchy.interfaces.Instance;
 
 
 public class GeneratedCSVReader implements DataReader
@@ -56,7 +56,9 @@ public class GeneratedCSVReader implements DataReader
 		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 
-		try ( BufferedReader br = new BufferedReader( new FileReader( inputFile ) ) ) {
+		Reader reader = new InputStreamReader( new FileInputStream( filePath ), "UTF-8" );
+
+		try ( BufferedReader br = new BufferedReader( reader ) ) {
 			final int optionalColumns = boolToInt( withTrueClassAttribute ) + boolToInt( withInstancesNameAttribute );
 			final int expectedMinimumColumnCount = 1 + optionalColumns;
 			int dataColumnCount = -1;
@@ -152,7 +154,7 @@ public class GeneratedCSVReader implements DataReader
 
 				if ( groupIndex == -1 ) {
 					// Group for this id doesn't exist yet. Create it.
-					BasicGroup newGroup = new BasicGroup( lineValues[0], null, new LinkedList<Group>(), new LinkedList<Instance>() );
+					BasicGroup newGroup = new BasicGroup( lineValues[0], null );
 					groups.add( newGroup );
 
 					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), dataNames, values, trueClassAttr ) );

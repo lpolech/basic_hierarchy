@@ -14,7 +14,7 @@ import basic_hierarchy.interfaces.Hierarchy;
 public class BasicHierarchy implements Hierarchy
 {
 	private Group root;
-	private BasicGroup[] groups;
+	private Group[] groups;
 	private String[] classes;
 	private int[] classCounts;
 	private int instanceCount;
@@ -22,8 +22,7 @@ public class BasicHierarchy implements Hierarchy
 
 	public BasicHierarchy(
 		Group root, List<? extends Group> groups,
-		Map<String, Integer> eachClassWithCount
-	)
+		Map<String, Integer> eachClassWithCount )
 	{
 		if ( root == null ) {
 			throw new IllegalArgumentException( "Root node must not be null." );

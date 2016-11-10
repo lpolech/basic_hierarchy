@@ -14,11 +14,6 @@ public class BasicGroup implements Group
 	private LinkedList<Instance> instances;
 
 
-	public void setId( String id )
-	{
-		this.id = id;
-	}
-
 	public BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances )
 	{
 		this.id = id;
@@ -35,6 +30,11 @@ public class BasicGroup implements Group
 	public void setParent( Group parent )
 	{
 		this.parent = parent;
+	}
+
+	public void setId( String id )
+	{
+		this.id = id;
 	}
 
 	public void setChildren( LinkedList<Group> children )

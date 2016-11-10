@@ -21,7 +21,7 @@ public interface Hierarchy
 	public int getGroupCount();
 
 	/**
-	 * Returns an array of ground-truth classes present in this hierarchy.
+	 * Returns an array of classes present in this hierarchy.
 	 */
 	public String[] getClasses();
 
