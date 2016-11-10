@@ -4,13 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
@@ -58,10 +55,6 @@ public class GeneratedCSVReader implements DataReader
 		BasicGroup root = null;
 		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
-
-		try ( Stream<String> stream = Files.lines( Paths.get( inputFile.getAbsolutePath() ) ) ) {
-			stream.forEach( System.out::println );
-		}
 
 		try ( BufferedReader br = new BufferedReader( new FileReader( inputFile ) ) ) {
 			final int optionalColumns = boolToInt( withTrueClassAttribute ) + boolToInt( withInstancesNameAttribute );
