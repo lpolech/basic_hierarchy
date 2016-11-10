@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.common.HierarchyFiller;
+import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.implementation.BasicGroup;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
@@ -135,7 +135,7 @@ public class GeneratedARFFReader implements DataReader
 			}
 		}
 
-		List<? extends Group> allNodes = HierarchyFiller.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps );
+		List<? extends Group> allNodes = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps );
 		return new BasicHierarchy( root, allNodes, eachClassAndItsCount );
 	}
 

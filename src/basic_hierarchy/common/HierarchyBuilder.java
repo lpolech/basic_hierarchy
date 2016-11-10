@@ -8,14 +8,15 @@ import java.util.Queue;
 
 import basic_hierarchy.implementation.BasicGroup;
 import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Hierarchy;
 
 
 /**
- * This class exposes methods which fix gaps in raw hierarchies.
+ * This class exposes methods allowing to build and fix gaps in {@link Hierarchy} objects.
  */
-public class HierarchyFiller
+public class HierarchyBuilder
 {
-	private HierarchyFiller()
+	private HierarchyBuilder()
 	{
 		// Static class -- disallow instantiation.
 		throw new RuntimeException( "Attempted to instantiate a static class: " + getClass().getName() );
