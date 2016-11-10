@@ -11,7 +11,12 @@ public interface Instance
 	public String getInstanceName();
 
 	/**
-	 * @return other data associated with this instance
+	 * @return names for each data column in this instance
+	 */
+	public String[] getDataNames();
+
+	/**
+	 * @return data columns associated with this instance
 	 */
 	public double[] getData();
 
@@ -22,12 +27,7 @@ public interface Instance
 	public String getTrueClass();
 
 	/**
-	 * Sets the id of the group to which this instance has been assigned ('assigned class').
-	 */
-	public void setGroupId( String id );
-
-	/**
 	 * @return id of the group to which this instance has been assigned ('assigned class').
 	 */
-	public String getGroupId();
+	public String getAssignedClass();
 }

@@ -1,12 +1,16 @@
 package basic_hierarchy.reader;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.stream.Stream;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyFiller;
@@ -28,10 +32,16 @@ public class GeneratedCSVReader implements DataReader
 	 * Nodes are given in depth-first order.
 	 * </p>
 	 * 
-	 * @see interfaces.DataReader#load(java.lang.String)
+	 * @throws IOException
+	 *             if an IO error occurred while reading the file
 	 */
 	@Override
-	public Hierarchy load( String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fixBreadthGaps )
+	public Hierarchy load(
+		String filePath,
+		boolean withInstancesNameAttribute,
+		boolean withTrueClassAttribute,
+		boolean withColumnHeaders,
+		boolean fixBreadthGaps ) throws IOException
 	{
 		// REFACTOR: Could create a factory class to generate nodes.
 		// REFACTOR: Skip nodes' elements containing "gen" prefix and assume that every ID prefix always begins with "gen"
@@ -49,14 +59,19 @@ public class GeneratedCSVReader implements DataReader
 		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 
-		try ( Scanner scanner = new Scanner( inputFile ) ) {
-			final int optionalColumns = ( withClassAttribute ? 1 : 0 ) + ( withInstancesNameAttribute ? 1 : 0 );
+		try ( Stream<String> stream = Files.lines( Paths.get( inputFile.getAbsolutePath() ) ) ) {
+			stream.forEach( System.out::println );
+		}
+
+		try ( BufferedReader br = new BufferedReader( new FileReader( inputFile ) ) ) {
+			final int optionalColumns = boolToInt( withTrueClassAttribute ) + boolToInt( withInstancesNameAttribute );
 			final int expectedMinimumColumnCount = 1 + optionalColumns;
 			int dataColumnCount = -1;
 			int totalColumnCount = -1;
 
-			while ( scanner.hasNextLine() ) {
-				String inputLine = scanner.nextLine();
+			String[] dataNames = null;
+
+			for ( String inputLine; ( inputLine = br.readLine() ) != null; ) {
 				String[] lineValues = inputLine.split( Constants.DELIMITER );
 
 				if ( dataColumnCount == -1 ) {
@@ -78,20 +93,29 @@ public class GeneratedCSVReader implements DataReader
 						dataColumnCount = lineValues.length - 1 - optionalColumns;
 						totalColumnCount = expectedMinimumColumnCount + dataColumnCount;
 					}
+
+					if ( withColumnHeaders ) {
+						dataNames = new String[dataColumnCount];
+						for ( int i = 0; i < dataColumnCount; ++i ) {
+							dataNames[i] = lineValues[i + 1 + optionalColumns];
+						}
+						continue;
+					}
 				}
 
 				// Assert that the row has the expected number of columns.
 				if ( lineValues.length != totalColumnCount ) {
 					throw new RuntimeException(
 						String.format(
-							"Input data not formatted corectly - each line should contain a total of %s columns.%nLine: %s",
-							totalColumnCount, inputLine
+							"Input data not formatted corectly - each line should contain a total of %s columns (this line has %s).%nLine: '%s'",
+							totalColumnCount, lineValues.length, inputLine
 						)
 					);
 				}
 
 				String trueClassAttr = null;
-				if ( withClassAttribute ) {
+				if ( withTrueClassAttribute ) {
+					// If present, true class is always assumed to be in the second column.
 					trueClassAttr = lineValues[1];
 					if ( eachClassAndItsCount.containsKey( trueClassAttr ) ) {
 						eachClassAndItsCount.put( trueClassAttr, eachClassAndItsCount.get( trueClassAttr ) + 1 );
@@ -103,11 +127,13 @@ public class GeneratedCSVReader implements DataReader
 
 				String instanceNameAttr = null;
 				if ( withInstancesNameAttribute ) {
-					instanceNameAttr = lineValues[1 + ( withClassAttribute ? 1 : 0 )];
+					// If present, instance name is assumed to be in the second column, unless
+					// true class is also present - then it is assumed to be in the third column.
+					instanceNameAttr = lineValues[1 + boolToInt( withTrueClassAttribute )];
 				}
 
 				double[] values = new double[dataColumnCount];
-				for ( int j = 0; j < values.length; j++ ) {
+				for ( int j = 0; j < dataColumnCount; ++j ) {
 					try {
 						// Data columns are always last.
 						values[j] = Double.parseDouble( lineValues[j + 1 + optionalColumns] );
@@ -136,7 +162,7 @@ public class GeneratedCSVReader implements DataReader
 					BasicGroup newGroup = new BasicGroup( lineValues[0], null, new LinkedList<Group>(), new LinkedList<Instance>() );
 					groups.add( newGroup );
 
-					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), values, trueClassAttr ) );
+					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), dataNames, values, trueClassAttr ) );
 
 					if ( root == null && lineValues[0].equalsIgnoreCase( Constants.ROOT_ID ) ) {
 						root = newGroup;
@@ -144,17 +170,18 @@ public class GeneratedCSVReader implements DataReader
 				}
 				else {
 					groups.get( groupIndex ).addInstance(
-						new BasicInstance( instanceNameAttr, groups.get( groupIndex ).getId(), values, trueClassAttr )
+						new BasicInstance( instanceNameAttr, groups.get( groupIndex ).getId(), dataNames, values, trueClassAttr )
 					);
 				}
 			}
 		}
-		catch ( IOException e ) {
-			System.err.println( "Error while reading input file: " + filePath + "\n" );
-			e.printStackTrace();
-		}
 
 		List<? extends Group> allNodes = HierarchyFiller.buildCompleteGroupHierarchy( root, groups, fixBreadthGaps );
 		return new BasicHierarchy( root, allNodes, eachClassAndItsCount );
+	}
+
+	private static int boolToInt( boolean b )
+	{
+		return b ? 1 : 0;
 	}
 }

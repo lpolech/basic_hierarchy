@@ -19,9 +19,13 @@ import weka.core.converters.ConverterUtils.DataSource;
 
 public class GeneratedARFFReader implements DataReader
 {
-
 	@Override
-	public Hierarchy load( String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreadthGaps )
+	public Hierarchy load(
+		String filePath,
+		boolean withInstancesNameAttribute,
+		boolean withClassAttribute,
+		boolean withDataNames,
+		boolean fillBreadthGaps )
 	{
 		File inputFile = new File( filePath );
 		if ( !inputFile.exists() && inputFile.isDirectory() ) {
@@ -31,6 +35,10 @@ public class GeneratedARFFReader implements DataReader
 			);
 			System.exit( 1 );
 		}
+
+		// TODO: Implement fetching of data column names.
+		String[] dataNames = null;
+
 		DataSource source = null;
 		Instances data = null;
 		try {
@@ -117,12 +125,12 @@ public class GeneratedARFFReader implements DataReader
 			}
 			if ( nodeExist ) {
 				groups.get( nodeIndex ).addInstance(
-					new BasicInstance( instanceNameAttr, groups.get( nodeIndex ).getId(), instanceData, classAttr )
+					new BasicInstance( instanceNameAttr, groups.get( nodeIndex ).getId(), dataNames, instanceData, classAttr )
 				);
 			}
 			else {
 				BasicGroup newGroup = new BasicGroup( assignClass, null );
-				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), instanceData, classAttr ) );
+				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), dataNames, instanceData, classAttr ) );
 				groups.add( newGroup );
 			}
 		}

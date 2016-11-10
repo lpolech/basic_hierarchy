@@ -1,40 +1,34 @@
 package basic_hierarchy.implementation;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import basic_hierarchy.interfaces.Instance;
 
 
 public class BasicInstance implements Instance
 {
 	private String instanceName;
+	private String[] dataNames;
 	private double[] data;
-	private String groupId;
+	private String assignedClass;
 	private String trueClass;
 
 
-	public BasicInstance( String instanceName, String groupId, double[] data, String trueClass )
+	public BasicInstance( String instanceName, String assignedClass, String[] dataNames, double[] data )
 	{
 		this.instanceName = instanceName;
-		this.groupId = groupId;
+		this.assignedClass = assignedClass;
+		this.dataNames = dataNames;
 		this.data = data;
+	}
+
+	public BasicInstance( String instanceName, String assignedClass, String[] dataNames, double[] data, String trueClass )
+	{
+		this( instanceName, assignedClass, dataNames, data );
 		this.trueClass = trueClass;
-	}
-
-	@Override
-	public String getGroupId()
-	{
-		return groupId;
-	}
-
-	@Override
-	public double[] getData()
-	{
-		return data;
-	}
-
-	@Override
-	public String getTrueClass()
-	{
-		return trueClass;
 	}
 
 	@Override
@@ -44,8 +38,48 @@ public class BasicInstance implements Instance
 	}
 
 	@Override
-	public void setGroupId( String groupId )
+	public String[] getDataNames()
 	{
-		this.groupId = groupId;
+		return dataNames;
+	}
+
+	@Override
+	public double[] getData()
+	{
+		return data;
+	}
+
+	@Override
+	public String getAssignedClass()
+	{
+		return assignedClass;
+	}
+
+	@Override
+	public String getTrueClass()
+	{
+		return trueClass;
+	}
+
+	public void setAssignedClass( String assignedClass )
+	{
+		this.assignedClass = assignedClass;
+	}
+
+	public List<Map.Entry<String, Double>> getNamesAndData()
+	{
+		if ( dataNames.length != data.length ) {
+			throw new RuntimeException( "Error: data names array and data array do not have the same length!" );
+		}
+
+		List<Map.Entry<String, Double>> result = new ArrayList<>( data.length );
+
+		for ( int i = 0; i < data.length; ++i ) {
+			result.add(
+				new AbstractMap.SimpleImmutableEntry<String, Double>( dataNames[i], data[i] )
+			);
+		}
+
+		return result;
 	}
 }
