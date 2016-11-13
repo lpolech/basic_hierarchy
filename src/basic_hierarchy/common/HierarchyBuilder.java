@@ -207,7 +207,7 @@ public class HierarchyBuilder
 			List<Group> children = currentGroup.getChildren();
 			List<Group> newChildren = new LinkedList<Group>();
 
-			for ( int i = 0; i <= children.size(); ++i ) {
+			for ( int i = 0; i < children.size(); ++i ) {
 				Group childGroup = children.get( i );
 
 				if ( childGroup == null ) {
