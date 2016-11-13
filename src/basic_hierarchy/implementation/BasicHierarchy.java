@@ -1,101 +1,125 @@
 package basic_hierarchy.implementation;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.StringIdComparator;
+import basic_hierarchy.interfaces.Group;
 import basic_hierarchy.interfaces.Hierarchy;
-import basic_hierarchy.interfaces.Node;
 
-public class BasicHierarchy implements Hierarchy {
-	private Node root;
-	private BasicNode[] groups;
+
+public class BasicHierarchy implements Hierarchy
+{
+	private Group root;
+	private Group[] groups;
 	private String[] classes;
-	private int[] classesCount;
-	private int numberOfInstances;
-	
-	public BasicHierarchy(Node root, LinkedList<Node> groups, HashMap<String, Integer> eachClassWithCount,
-			int numberOfInstances)
+	private int[] classCounts;
+	private int instanceCount;
+
+
+	public BasicHierarchy(
+		Group root, List<? extends Group> groups,
+		Map<String, Integer> eachClassWithCount )
 	{
+		if ( root == null ) {
+			throw new IllegalArgumentException( "Root node must not be null." );
+		}
+
 		this.root = root;
-		this.groups = groups.toArray(new BasicNode[groups.size()]);
-		this.numberOfInstances = numberOfInstances;
-		
+		this.groups = groups.toArray( new BasicGroup[groups.size()] );
+
+		for ( Group g : groups ) {
+			this.instanceCount += g.getInstances().size();
+		}
+
 		classes = new String[eachClassWithCount.size()];
-		classesCount = new int[eachClassWithCount.size()];
-		LinkedList<String> sortedKeyes = new LinkedList<String>(eachClassWithCount.keySet());
-		Collections.sort(sortedKeyes, new StringIdComparator());
-		int arrayIndex = 0;
-		for(String key: sortedKeyes)
-		{
-			classes[arrayIndex] = key;
-			classesCount[arrayIndex] = eachClassWithCount.get(key);
-			arrayIndex++;
+		classCounts = new int[eachClassWithCount.size()];
+
+		LinkedList<String> sortedKeys = new LinkedList<String>( eachClassWithCount.keySet() );
+		sortedKeys.sort( new StringIdComparator() );
+
+		for ( int index = 0; index < sortedKeys.size(); ++index ) {
+			String key = sortedKeys.get( index );
+			classes[index] = key;
+			classCounts[index] = eachClassWithCount.get( key );
 		}
 	}
-	
+
 	@Override
-	public Node getRoot() {
+	public Group getRoot()
+	{
 		return root;
 	}
 
 	@Override
-	public int getNumberOfGroups() {
+	public int getGroupCount()
+	{
 		return groups.length;
 	}
 
 	@Override
-	public int getNumberOfClasses() {
+	public int getClassCount()
+	{
 		return classes.length;
 	}
 
 	@Override
-	public Node[] getGroups() {
+	public Group[] getGroups()
+	{
 		return groups;
 	}
 
 	@Override
-	public String[] getClasses() {
+	public String[] getClasses()
+	{
 		return classes;
 	}
 
 	@Override
-	public int getClassCount(String className, boolean withInstancesInheritance) {
-		int index = Arrays.binarySearch(classes, className, new StringIdComparator());
-		if(index < 0)
+	public int getInstanceCount()
+	{
+		return instanceCount;
+	}
+
+	@Override
+	public int getClassCount( String className, boolean withInstanceInheritance )
+	{
+		int index = Arrays.binarySearch( classes, className, new StringIdComparator() );
+
+		if ( index < 0 ) {
+			// Not found.
 			return index;
-		else
-		{
-			//REFACTOR below code could be faster, by moving the computations into the constructor in a smart way
-			//e.g. by using the partial results (from other classes) to compute results for other classes
-			if(withInstancesInheritance)
-			{
-				int returnValue = classesCount[index];
-				for(int i = index; i < classesCount.length; i++)
-				{
-					if(className.length() < classes[i].length() && classes[i].startsWith(className+Constants.HIERARCHY_BRANCH_SEPARATOR))
-					{
-						returnValue += classesCount[i];
+		}
+		else {
+			// REFACTOR below code could be faster, by moving the computations into the constructor in a smart way
+			// e.g. by using the partial results (from other classes) to compute results for other classes
+			if ( withInstanceInheritance ) {
+				String prefix = className + Constants.HIERARCHY_BRANCH_SEPARATOR;
+				int result = classCounts[index];
+				for ( int i = index; i < classCounts.length; ++i ) {
+					if ( className.length() < classes[i].length() && classes[i].startsWith( prefix ) ) {
+						result += classCounts[i];
 					}
 				}
-				return returnValue;
+
+				return result;
 			}
-			else
-				return classesCount[index];
+			else {
+				return classCounts[index];
+			}
 		}
 	}
 
 	@Override
-	public int getNumberOfInstances() {
-		return numberOfInstances;
-	}
+	public String toString()
+	{
+		if ( root != null ) {
+			return root.toString();
+		}
 
-	@Override
-	public void printTree() {
-		if(root != null)
-			root.printSubtree();		
+		throw new RuntimeException( "Implementation error: this hierarchy has no root node." );
 	}
 }

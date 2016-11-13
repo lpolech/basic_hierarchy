@@ -1,12 +1,47 @@
 package basic_hierarchy.interfaces;
 
-public interface Hierarchy {
-	public Node getRoot();
-	public Node[] getGroups();
-	public int getNumberOfGroups();
+/**
+ * A hierarchy is a collection of {@link Group}s, all of which share one common ancestor (the root group).
+ */
+public interface Hierarchy
+{
+	/**
+	 * Returns the root node of this hierarchy.
+	 */
+	public Group getRoot();
+
+	/**
+	 * Returns an array of groups of instances.
+	 */
+	public Group[] getGroups();
+
+	/**
+	 * Returns the number of groups in this hierarchy. Equivalent to {@code getGroups().length}.
+	 */
+	public int getGroupCount();
+
+	/**
+	 * Returns an array of classes present in this hierarchy.
+	 */
 	public String[] getClasses();
-	public int getNumberOfClasses();
-	public int getClassCount(String className, boolean withClassHierarchy);
-	public int getNumberOfInstances();
-	public void printTree();
+
+	/**
+	 * Returns the number of ground-truth classes. Equivalent to {@code getClasses().length}.
+	 */
+	public int getClassCount();
+
+	/**
+	 * Returns the total number of instances in this hierarchy, ie. sum of instances in all groups.
+	 */
+	public int getInstanceCount();
+
+	/**
+	 * Returns the number of groups within the specified class.
+	 * 
+	 * @param className
+	 *            Class name to look for.
+	 * @param withInstanceInheritance
+	 *            if true, the result will also include child classes of the specified class. (?)
+	 */
+	public int getClassCount( String className, boolean withInstanceInheritance );
 }

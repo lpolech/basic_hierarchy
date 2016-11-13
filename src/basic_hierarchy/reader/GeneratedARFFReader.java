@@ -3,145 +3,140 @@ package basic_hierarchy.reader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
 
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.common.HierarchyFiller;
+import basic_hierarchy.common.HierarchyBuilder;
+import basic_hierarchy.implementation.BasicGroup;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
-import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.DataReader;
+import basic_hierarchy.interfaces.Group;
 import basic_hierarchy.interfaces.Hierarchy;
-import basic_hierarchy.interfaces.Node;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
-public class GeneratedARFFReader implements DataReader {
 
+public class GeneratedARFFReader implements DataReader
+{
 	@Override
-	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreathGaps) {
-		File inputFile = new File(filePath);
-		if(!inputFile.exists() && inputFile.isDirectory())
-		{
-			System.err.println("Cannot access to file: " + filePath + ". Does it exist and is it a "
-					+ "weka ARFF file?\n");
-			System.exit(1);
+	public Hierarchy load(
+		String filePath,
+		boolean withInstancesNameAttribute,
+		boolean withClassAttribute,
+		boolean withDataNames,
+		boolean fillBreadthGaps )
+	{
+		File inputFile = new File( filePath );
+		if ( !inputFile.exists() && inputFile.isDirectory() ) {
+			System.err.println(
+				"Cannot access to file: " + filePath + ". Does it exist and is it a "
+					+ "weka ARFF file?\n"
+			);
+			System.exit( 1 );
 		}
+
+		// TODO: Implement fetching of data column names.
+		String[] dataNames = null;
+
 		DataSource source = null;
 		Instances data = null;
 		try {
-			source = new DataSource(inputFile.getAbsolutePath());
-			data = source.getDataSet();			
-		} catch (Exception e) {
+			source = new DataSource( inputFile.getAbsolutePath() );
+			data = source.getDataSet();
+		}
+		catch ( Exception e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.exit(1);
+			System.exit( 1 );
 		}
-		
-		data.setClassIndex(Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE);
+
+		data.setClassIndex( Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE );
 		int assignClassIndex = data.classIndex();
-		
-		System.out.println("Assign class attribute name is: " + data.classAttribute().name()
-				+ "\nNumber of classes: " + data.numClasses());
-		
-		BasicNode root = null;
-		ArrayList<BasicNode> nodes = new ArrayList<BasicNode>();
-		int rootIndexInNodes = -1;
-		int numberOfInstances = 0;		
+
+		System.out.println(
+			"Assign class attribute name is: " + data.classAttribute().name()
+				+ "\nNumber of classes: " + data.numClasses()
+		);
+
+		BasicGroup root = null;
+		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
-		
-		int numberOfDimensions = data.numAttributes() - 1;//minus assign class attribute
-		if(withClassAttribute)
-		{
+
+		int numberOfDimensions = data.numAttributes() - 1; // minus assign class attribute
+		if ( withClassAttribute ) {
 			numberOfDimensions -= 1;
 		}
-		
-		if(withInstancesNameAttribute)
-		{
+
+		if ( withInstancesNameAttribute ) {
 			numberOfDimensions -= 1;
 		}
-		
-		for(int i = 0; i < data.numInstances(); i++)
-		{
-			weka.core.Instance inst = data.instance(i);
-			
-			String classAttrib = null;
-			if(withClassAttribute)
-			{
-				classAttrib = inst.stringValue(Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE);
-				if(eachClassAndItsCount.containsKey(classAttrib))
-				{
-					eachClassAndItsCount.put(classAttrib, eachClassAndItsCount.get(classAttrib) + 1);
+
+		for ( int i = 0; i < data.numInstances(); i++ ) {
+			weka.core.Instance instance = data.instance( i );
+
+			String classAttr = null;
+			if ( withClassAttribute ) {
+				classAttr = instance.stringValue( Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE );
+				if ( eachClassAndItsCount.containsKey( classAttr ) ) {
+					eachClassAndItsCount.put( classAttr, eachClassAndItsCount.get( classAttr ) + 1 );
 				}
-				else
-				{
-					eachClassAndItsCount.put(classAttrib, 1);
+				else {
+					eachClassAndItsCount.put( classAttr, 1 );
 				}
 			}
-			
-			String instanceNameAttrib = null;
-			if(withInstancesNameAttribute)
-			{
-				instanceNameAttrib = inst.stringValue(Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + (withClassAttribute? 1 : 0));
+
+			String instanceNameAttr = null;
+			if ( withInstancesNameAttribute ) {
+				instanceNameAttr = instance.stringValue( Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + ( withClassAttribute ? 1 : 0 ) );
 			}
-			
-			//assuming that node's instances are grouped in input file
-			//REFACTOR: below could the binary-search be utilised with sorting by ID-comparator
-			
-			String assignClass = inst.stringValue(assignClassIndex);
-			
-			double[] instData = new double[numberOfDimensions];
+
+			// assuming that node's instances are grouped in input file
+			// REFACTOR: below could the binary-search be utilised with sorting by ID-comparator
+
+			String assignClass = instance.stringValue( assignClassIndex );
+
+			double[] instanceData = new double[numberOfDimensions];
 			int instDataIndex = 0;
-			for(int j = 0; j < inst.numAttributes(); j++)
-			{
-				if(j == Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE)
+			for ( int j = 0; j < instance.numAttributes(); ++j ) {
+				if ( j == Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE )
 					continue;
-				
-				if(withClassAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
+
+				if ( withClassAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE )
 					continue;
-				
-				if(withClassAttribute && withInstancesNameAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + 1)
+
+				if ( withClassAttribute && withInstancesNameAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + 1 )
 					continue;
-				
-				if(!withClassAttribute && withInstancesNameAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
+
+				if ( !withClassAttribute && withInstancesNameAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE )
 					continue;
-				
-				instData[instDataIndex] = inst.value(j);
-				instDataIndex++;
+
+				instanceData[instDataIndex] = instance.value( j );
+				++instDataIndex;
 			}
-			
+
 			boolean nodeExist = false;
 			int nodeIndex = -1;
-			for(int nodeIndexIter = 0; nodeIndexIter < nodes.size() && !nodeExist; nodeIndexIter++)
-			{
-				if(nodes.get(nodeIndexIter).getId().equalsIgnoreCase(assignClass))
-				{
+			for ( int nodeIndexIter = 0; nodeIndexIter < groups.size() && !nodeExist; nodeIndexIter++ ) {
+				if ( groups.get( nodeIndexIter ).getId().equalsIgnoreCase( assignClass ) ) {
 					nodeExist = true;
 					nodeIndex = nodeIndexIter;
 				}
 			}
-			if(nodeExist)
-			{
-				nodes.get(nodeIndex).addInstance(new BasicInstance(instanceNameAttrib, nodes.get(nodeIndex).getId(), instData, classAttrib));
-				numberOfInstances++;
+			if ( nodeExist ) {
+				groups.get( nodeIndex ).addInstance(
+					new BasicInstance( instanceNameAttr, groups.get( nodeIndex ).getId(), dataNames, instanceData, classAttr )
+				);
 			}
-			else
-			{
-				BasicNode nodeToAdd = new BasicNode(assignClass, null, new LinkedList<Node>(),
-						new LinkedList<basic_hierarchy.interfaces.Instance>());
-				nodeToAdd.addInstance(new BasicInstance(instanceNameAttrib, nodeToAdd.getId(), instData, classAttrib));
-				numberOfInstances++;
-				nodes.add(nodeToAdd);
-				if(root == null && assignClass.equalsIgnoreCase(Constants.ROOT_ID))
-				{
-					root = nodes.get(nodes.size()-1);
-					rootIndexInNodes = nodes.size()-1;
-				}
+			else {
+				BasicGroup newGroup = new BasicGroup( assignClass, null );
+				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), dataNames, instanceData, classAttr ) );
+				groups.add( newGroup );
 			}
 		}
-		
-		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps);
-		return new BasicHierarchy(root, allNodes, eachClassAndItsCount, numberOfInstances);
+
+		List<? extends Group> allNodes = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps );
+		return new BasicHierarchy( root, allNodes, eachClassAndItsCount );
 	}
 
 }
