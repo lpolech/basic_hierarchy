@@ -19,7 +19,8 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class GeneratedARFFReader implements DataReader {
 
 	@Override
-	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreathGaps) {
+	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute,
+						  boolean fillBreathGaps, boolean useSubtree) {
 		File inputFile = new File(filePath);
 		if(!inputFile.exists() && inputFile.isDirectory())
 		{
@@ -128,7 +129,7 @@ public class GeneratedARFFReader implements DataReader {
 			else
 			{
 				BasicNode nodeToAdd = new BasicNode(assignClass, null, new LinkedList<Node>(),
-						new LinkedList<basic_hierarchy.interfaces.Instance>());
+						new LinkedList<basic_hierarchy.interfaces.Instance>(), useSubtree);
 				nodeToAdd.addInstance(new BasicInstance(instanceNameAttrib, nodeToAdd.getId(), instData, classAttrib));
 				numberOfInstances++;
 				nodes.add(nodeToAdd);
@@ -140,7 +141,8 @@ public class GeneratedARFFReader implements DataReader {
 			}
 		}
 		
-		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps);
+		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps,
+				useSubtree);
 		return new BasicHierarchy(root, allNodes, eachClassAndItsCount, numberOfInstances);
 	}
 

@@ -28,7 +28,8 @@ public class GeneratedCSVReader implements DataReader {
 	 * @see interfaces.DataReader#load(java.lang.String)
 	 */
 	@Override
-	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreathGaps) {
+	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute, boolean fillBreathGaps,
+						  boolean useSubtree) {
 		//REFACTOR instead of nodes and AdditionalNodes data structures we could use one or more hash maps
 		//REFACTOR skip nodes' elements containing "gen" prefix and assume that every ID prefix always begins with "gen"
 		File inputFile = new File(filePath);
@@ -127,7 +128,7 @@ public class GeneratedCSVReader implements DataReader {
 				}
 				else
 				{
-					BasicNode nodeToAdd = new BasicNode(lineValues[0], null, new LinkedList<Node>(), new LinkedList<Instance>());
+					BasicNode nodeToAdd = new BasicNode(lineValues[0], null, new LinkedList<Node>(), new LinkedList<Instance>(), useSubtree);
 					nodeToAdd.addInstance(new BasicInstance(instanceNameAttrib, nodeToAdd.getId(), values, classAttrib));
 					numberOfInstances++;
 					nodes.add(nodeToAdd);
@@ -144,7 +145,8 @@ public class GeneratedCSVReader implements DataReader {
 			e.printStackTrace();
 		}
 		
-		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps);
+		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps,
+				useSubtree);
 		return new BasicHierarchy(root, allNodes, eachClassAndItsCount, numberOfInstances);
 	}
 }

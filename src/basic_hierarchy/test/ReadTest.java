@@ -11,7 +11,7 @@ public class ReadTest {
 //		Hierarchy H = arffReader.load("balancedTree5000hierVis.arff", false, true, false);
 
 		GeneratedCSVReader arffReader = new GeneratedCSVReader();
-		Hierarchy H = arffReader.load("Edge_tool_n03265032.sbow.csv", true, true, false);
+		Hierarchy H = arffReader.load("balancedTree5000.csv", false, false, false, true);
 		
 		H.printTree();
 	}

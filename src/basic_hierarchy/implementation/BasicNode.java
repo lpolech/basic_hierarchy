@@ -10,19 +10,34 @@ public class BasicNode implements Node {
 	private Node parent;
 	private LinkedList<Node> children;
 	private LinkedList<Instance> instances;
+	private Instance representation;
 	
 	public void setId(String id)
 	{
 		this.id = id;
 	}
-	
-	public BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances)
+
+	private BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances)
+    {
+        this.id = id;
+        this.parent = parent;
+        this.children = children;
+        this.instances = instances;
+    }
+
+	public BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances,
+                     boolean useSubtree)
 	{
-		this.id = id;
-		this.parent = parent;
-		this.children = children;
-		this.instances = instances;
+		this(id, parent, children, instances);
+        this.representation = recalculateCentroid(useSubtree);
 	}
+
+    public BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances,
+                     Instance representation)
+    {
+        this(id, parent, children, instances);
+        this.representation = representation;
+    }
 
 	public void setParent(Node parent) {
 		this.parent = parent;
@@ -84,8 +99,7 @@ public class BasicNode implements Node {
 
 	@Override
 	public Instance getNodeRepresentation() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.representation;
 	}
 
 	@Override
@@ -101,5 +115,28 @@ public class BasicNode implements Node {
         if (children.size() > 0) {
         	((BasicNode)children.get(children.size() - 1)).print(prefix + (isTail ?"    " : "|   "), true);
         }
+    }
+
+    public Instance recalculateCentroid(boolean useSubtree)
+    {
+        LinkedList<Instance> instances = useSubtree? getSubtreeInstances(): getNodeInstances();
+
+        double[] centroidCoordinates = new double[instances.isEmpty()? 0: instances.getFirst().getData().length];
+        for(Instance inst: instances)
+        {
+            double[] instanceData = inst.getData();
+            for(int i = 0; i < centroidCoordinates.length; i++)
+            {
+                centroidCoordinates[i] += instanceData[i];
+            }
+        }
+
+        for(int i = 0; i < centroidCoordinates.length; i++)
+        {
+            centroidCoordinates[i] /= instances.size();
+        }
+
+        this.representation = new BasicInstance("centroid", "centroid", centroidCoordinates, "centroid");
+        return this.representation;
     }
 }

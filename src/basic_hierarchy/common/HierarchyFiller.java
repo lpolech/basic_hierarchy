@@ -12,7 +12,7 @@ import basic_hierarchy.interfaces.Node;
 public class HierarchyFiller {
 	@SuppressWarnings("unchecked")
 	public static LinkedList<Node> addMissingEmptyNodes(BasicNode root, ArrayList<BasicNode> nodes, int rootIndexInNodes, 
-			boolean fillBreathGaps) {
+			boolean fillBreathGaps, boolean useSubtree) {
 		LinkedList<Node> allNodes;
 		//hierarchy build
 		
@@ -131,7 +131,7 @@ public class HierarchyFiller {
 						
 						//add empty node
 						BasicNode nodeToAdd = new BasicNode(nodeToAddId, newParent, 
-								new LinkedList<Node>(), new LinkedList<Instance>());
+								new LinkedList<Node>(), new LinkedList<Instance>(), useSubtree);
 						additionalNodes.add(nodeToAdd);
 						//create proper parent relation
 						newParent.addChild(nodeToAdd);
@@ -185,7 +185,7 @@ public class HierarchyFiller {
 					if(!existingIds.contains(i))
 					{
 						BasicNode nodeToAdd = new BasicNode(currentNode.getId().concat(Constants.HIERARCHY_BRANCH_SEPARATOR + i),
-								currentNode, new LinkedList<Node>(), new LinkedList<Instance>());
+								currentNode, new LinkedList<Node>(), new LinkedList<Instance>(), useSubtree);
 							additionalNodes.add(nodeToAdd);
 							currentNode.addChild(nodeToAdd);
 					}
