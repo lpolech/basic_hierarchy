@@ -37,6 +37,12 @@ public class HierarchyBuilder
 	 */
 	public static List<? extends Group> buildCompleteGroupHierarchy( BasicGroup root, List<BasicGroup> groups, boolean fixBreadthGaps )
 	{
+		if ( root == null ) {
+			// Root node was missing from input file - create it artificially.
+			root = new BasicGroup( Constants.ROOT_ID, null );
+			groups.add( 0, root );
+		}
+
 		buildGroupHierarchy( groups );
 		groups = fixDepthGaps( root, groups );
 

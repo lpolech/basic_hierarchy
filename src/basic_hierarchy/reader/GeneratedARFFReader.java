@@ -135,8 +135,20 @@ public class GeneratedARFFReader implements DataReader
 			}
 		}
 
-		List<? extends Group> allNodes = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps );
-		return new BasicHierarchy( root, allNodes, eachClassAndItsCount );
+		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps );
+
+		if ( root == null ) {
+			// If root was missing from input file, then it must've been created artificially - find it.
+			// List of groups should be sorted by ID, therefore finding root should have negligible overhead.
+			for ( Group group : allGroups ) {
+				if ( group.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
+					root = (BasicGroup)group;
+					break;
+				}
+			}
+		}
+
+		return new BasicHierarchy( root, allGroups, eachClassAndItsCount );
 	}
 
 }
