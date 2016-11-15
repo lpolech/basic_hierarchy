@@ -1,6 +1,7 @@
 package basic_hierarchy.common;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +43,8 @@ public class HierarchyBuilder
 		if ( fixBreadthGaps ) {
 			groups = fixBreadthGaps( root, groups );
 		}
+
+		groups.sort( new GroupComparator() );
 
 		return groups;
 	}
@@ -302,7 +305,9 @@ public class HierarchyBuilder
 	 */
 	private static String[] getGroupBranchIds( Group g )
 	{
-		return g.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
+		String[] result = g.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
+		// Ignore the first index ('gen')
+		return Arrays.copyOfRange( result, 1, result.length );
 	}
 
 	/**
@@ -315,6 +320,7 @@ public class HierarchyBuilder
 
 	/**
 	 * Checks whether the two groups are directly related (parent-child).
+	 * This method returns false if both ids point to the same group.
 	 * 
 	 * @param parentIds
 	 *            ID segments of the group acting as parent
@@ -345,6 +351,7 @@ public class HierarchyBuilder
 
 	/**
 	 * Checks whether the two groups are indirectly related (ancestor-descendant).
+	 * This method returns false if both ids point to the same group.
 	 * 
 	 * @param parentIds
 	 *            ID segments of the group acting as parent
@@ -354,7 +361,7 @@ public class HierarchyBuilder
 	 */
 	private static boolean areGroupsRelated( String[] parentIds, String[] childIds )
 	{
-		if ( parentIds.length <= childIds.length ) {
+		if ( parentIds.length < childIds.length ) {
 			for ( int i = 0; i < parentIds.length; ++i ) {
 				if ( !parentIds[i].equals( childIds[i] ) ) {
 					return false;
