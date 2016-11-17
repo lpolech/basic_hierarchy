@@ -70,7 +70,7 @@ public class TestCommon {
         rootFirstChildFirstChildInstances.add(new BasicInstance("41", rootFirstChildFirstChildId, new double[]{0.5, 0.5}, rootFirstChildFirstChildId));
         rootFirstChildFirstChildInstances.add(new BasicInstance("42", rootFirstChildFirstChildId, new double[]{-0.5, -0.5}, rootFirstChildFirstChildId));
         rootFirstChildFirstChildInstances.add(new BasicInstance("43", rootFirstChildFirstChildId, new double[]{3.5, -0.5}, rootSecondChildId));
-        rootFirstChildFirstChildInstances.add(new BasicInstance("41", rootFirstChildFirstChildId, new double[]{0.25, 0.75}, rootId));
+        rootFirstChildFirstChildInstances.add(new BasicInstance("44", rootFirstChildFirstChildId, new double[]{0.25, 0.75}, rootId));
         BasicNode rootFirstChildFirstChildCluster = new BasicNode(rootFirstChildFirstChildId, rootFirstChildCluster, new LinkedList<Node>(), rootFirstChildFirstChildInstances, false);
 
         rootCluster.addChild(rootFirstChildCluster);
