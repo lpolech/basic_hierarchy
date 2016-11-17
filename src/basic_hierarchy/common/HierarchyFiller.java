@@ -193,6 +193,16 @@ public class HierarchyFiller {
 				Collections.sort(currentNode.getChildren(), new NodeIdComparator());
 			}
 		}
+
+		for(BasicNode n: nodes)
+		{
+			n.recalculateCentroid(useSubtree);
+		}
+
+        for(BasicNode n: additionalNodes)
+        {
+            n.recalculateCentroid(useSubtree);
+        }
 			
 		allNodes = (LinkedList<Node>) additionalNodes.clone();
 		allNodes.addAll(nodes);
