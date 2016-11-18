@@ -16,12 +16,14 @@ public class BasicHierarchy implements Hierarchy
 	private Group root;
 	private Group[] groups;
 	private String[] classes;
+	private String[] dataNames;
 	private int[] classCounts;
 	private int instanceCount;
 
 
 	public BasicHierarchy(
 		Group root, List<? extends Group> groups,
+		String[] dataNames,
 		Map<String, Integer> eachClassWithCount )
 	{
 		if ( root == null ) {
@@ -30,6 +32,7 @@ public class BasicHierarchy implements Hierarchy
 
 		this.root = root;
 		this.groups = groups.toArray( new BasicGroup[groups.size()] );
+		this.dataNames = dataNames;
 
 		for ( Group g : groups ) {
 			this.instanceCount += g.getInstances().size();
@@ -111,6 +114,12 @@ public class BasicHierarchy implements Hierarchy
 				return classCounts[index];
 			}
 		}
+	}
+
+	@Override
+	public String[] getDataNames()
+	{
+		return dataNames;
 	}
 
 	@Override

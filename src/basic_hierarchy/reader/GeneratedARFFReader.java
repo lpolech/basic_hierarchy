@@ -125,12 +125,12 @@ public class GeneratedARFFReader implements DataReader
 			}
 			if ( nodeExist ) {
 				groups.get( nodeIndex ).addInstance(
-					new BasicInstance( instanceNameAttr, groups.get( nodeIndex ).getId(), dataNames, instanceData, classAttr )
+					new BasicInstance( instanceNameAttr, groups.get( nodeIndex ).getId(), instanceData, classAttr )
 				);
 			}
 			else {
 				BasicGroup newGroup = new BasicGroup( assignClass, null );
-				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), dataNames, instanceData, classAttr ) );
+				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), instanceData, classAttr ) );
 				groups.add( newGroup );
 			}
 		}
@@ -148,7 +148,7 @@ public class GeneratedARFFReader implements DataReader
 			}
 		}
 
-		return new BasicHierarchy( root, allGroups, eachClassAndItsCount );
+		return new BasicHierarchy( root, allGroups, dataNames, eachClassAndItsCount );
 	}
 
 }

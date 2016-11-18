@@ -54,17 +54,17 @@ public class GeneratedCSVReader implements DataReader
 
 		BasicGroup root = null;
 		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
+		String[] dataNames = null;
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 
 		Reader reader = new InputStreamReader( new FileInputStream( filePath ), "UTF-8" );
+
 
 		try ( BufferedReader br = new BufferedReader( reader ) ) {
 			final int optionalColumns = boolToInt( withTrueClassAttribute ) + boolToInt( withInstancesNameAttribute );
 			final int expectedMinimumColumnCount = 1 + optionalColumns;
 			int dataColumnCount = -1;
 			int totalColumnCount = -1;
-
-			String[] dataNames = null;
 
 			for ( String inputLine; ( inputLine = br.readLine() ) != null; ) {
 				String[] lineValues = inputLine.split( Constants.DELIMITER );
@@ -157,7 +157,7 @@ public class GeneratedCSVReader implements DataReader
 					BasicGroup newGroup = new BasicGroup( lineValues[0], null );
 					groups.add( newGroup );
 
-					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), dataNames, values, trueClassAttr ) );
+					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), values, trueClassAttr ) );
 
 					if ( root == null && lineValues[0].equalsIgnoreCase( Constants.ROOT_ID ) ) {
 						root = newGroup;
@@ -165,7 +165,7 @@ public class GeneratedCSVReader implements DataReader
 				}
 				else {
 					groups.get( groupIndex ).addInstance(
-						new BasicInstance( instanceNameAttr, groups.get( groupIndex ).getId(), dataNames, values, trueClassAttr )
+						new BasicInstance( instanceNameAttr, groups.get( groupIndex ).getId(), values, trueClassAttr )
 					);
 				}
 			}
@@ -184,7 +184,7 @@ public class GeneratedCSVReader implements DataReader
 			}
 		}
 
-		return new BasicHierarchy( root, allGroups, eachClassAndItsCount );
+		return new BasicHierarchy( root, allGroups, dataNames, eachClassAndItsCount );
 	}
 
 	private static int boolToInt( boolean b )

@@ -44,4 +44,9 @@ public interface Hierarchy
 	 *            if true, the result will also include child classes of the specified class. (?)
 	 */
 	public int getClassCount( String className, boolean withInstanceInheritance );
+
+	/**
+	 * @return names for each data column in this instance
+	 */
+	public String[] getDataNames();
 }

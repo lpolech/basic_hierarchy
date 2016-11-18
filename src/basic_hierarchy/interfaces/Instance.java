@@ -11,11 +11,6 @@ public interface Instance
 	public String getInstanceName();
 
 	/**
-	 * @return names for each data column in this instance
-	 */
-	public String[] getDataNames();
-
-	/**
 	 * @return data columns associated with this instance
 	 */
 	public double[] getData();
