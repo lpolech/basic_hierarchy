@@ -25,7 +25,8 @@ public class GeneratedARFFReader implements DataReader
 		boolean withInstancesNameAttribute,
 		boolean withClassAttribute,
 		boolean withDataNames,
-		boolean fillBreadthGaps )
+		boolean fillBreadthGaps,
+		boolean useSubtree )
 	{
 		File inputFile = new File( filePath );
 		if ( !inputFile.exists() && inputFile.isDirectory() ) {
@@ -129,13 +130,13 @@ public class GeneratedARFFReader implements DataReader
 				);
 			}
 			else {
-				BasicGroup newGroup = new BasicGroup( assignClass, null );
+				BasicGroup newGroup = new BasicGroup( assignClass, null, useSubtree );
 				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), instanceData, classAttr ) );
 				groups.add( newGroup );
 			}
 		}
 
-		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps );
+		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps, useSubtree );
 
 		if ( root == null ) {
 			// If root was missing from input file, then it must've been created artificially - find it.

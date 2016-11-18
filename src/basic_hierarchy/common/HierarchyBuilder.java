@@ -33,21 +33,29 @@ public class HierarchyBuilder
 	 *            the original collection of groups
 	 * @param fixBreadthGaps
 	 *            whether the hierarchy fixing algorithm should also fix gaps in breadth, not just depth.
+	 * @param useSubtree
+	 *            whether the centroid calculation should also include child groups' instances.
 	 * @return the complete 'fixed' collection of groups, filled with artificial groups
 	 */
-	public static List<? extends Group> buildCompleteGroupHierarchy( BasicGroup root, List<BasicGroup> groups, boolean fixBreadthGaps )
+	public static List<? extends Group> buildCompleteGroupHierarchy(
+		BasicGroup root, List<BasicGroup> groups,
+		boolean fixBreadthGaps, boolean useSubtree )
 	{
 		if ( root == null ) {
 			// Root node was missing from input file - create it artificially.
-			root = new BasicGroup( Constants.ROOT_ID, null );
+			root = new BasicGroup( Constants.ROOT_ID, null, useSubtree );
 			groups.add( 0, root );
 		}
 
 		buildGroupHierarchy( groups );
-		groups = fixDepthGaps( root, groups );
+		groups = fixDepthGaps( root, groups, useSubtree );
 
 		if ( fixBreadthGaps ) {
-			groups = fixBreadthGaps( root, groups );
+			groups = fixBreadthGaps( root, groups, useSubtree );
+		}
+
+		for ( BasicGroup g : groups ) {
+			g.recalculateCentroid( useSubtree );
 		}
 
 		groups.sort( new GroupComparator() );
@@ -104,9 +112,11 @@ public class HierarchyBuilder
 	 *            the root group
 	 * @param groups
 	 *            the original collection of groups
+	 * @param useSubtree
+	 *            whether the cntroid calculation should also include child groups' instances.
 	 * @return the complete 'fixed' collection of groups, filled with artificial groups
 	 */
-	private static List<BasicGroup> fixDepthGaps( BasicGroup root, List<BasicGroup> groups )
+	private static List<BasicGroup> fixDepthGaps( BasicGroup root, List<BasicGroup> groups, boolean useSubtree )
 	{
 		List<BasicGroup> artificialGroups = new ArrayList<BasicGroup>();
 
@@ -154,7 +164,7 @@ public class HierarchyBuilder
 
 						// Add an empty group
 						BasicGroup newGroup = new BasicGroup(
-							newGroupId, newParent
+							newGroupId, newParent, useSubtree
 						);
 
 						// Create proper parent-child relations
@@ -198,9 +208,11 @@ public class HierarchyBuilder
 	 *            the root group
 	 * @param groups
 	 *            the original collection of groups
+	 * @param useSubtree
+	 *            whether the cntroid calculation should also include child groups' instances.
 	 * @return the complete 'fixed' collection of groups, filled with artificial groups
 	 */
-	private static List<BasicGroup> fixBreadthGaps( BasicGroup root, List<BasicGroup> groups )
+	private static List<BasicGroup> fixBreadthGaps( BasicGroup root, List<BasicGroup> groups, boolean useSubtree )
 	{
 		List<BasicGroup> artificialGroups = new ArrayList<BasicGroup>();
 
@@ -224,7 +236,7 @@ public class HierarchyBuilder
 					buf.setLength( 0 );
 					buf.append( currentGroup.getId() ).append( Constants.HIERARCHY_BRANCH_SEPARATOR ).append( i );
 
-					BasicGroup newGroup = new BasicGroup( buf.toString(), currentGroup );
+					BasicGroup newGroup = new BasicGroup( buf.toString(), currentGroup, useSubtree );
 					newGroup.setParent( currentGroup );
 
 					newChildren.add( newGroup );

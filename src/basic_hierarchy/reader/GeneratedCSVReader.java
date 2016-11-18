@@ -38,7 +38,8 @@ public class GeneratedCSVReader implements DataReader
 		boolean withInstancesNameAttribute,
 		boolean withTrueClassAttribute,
 		boolean withColumnHeaders,
-		boolean fixBreadthGaps ) throws IOException
+		boolean fixBreadthGaps,
+		boolean useSubtree ) throws IOException
 	{
 		// REFACTOR: Could create a factory class to generate nodes.
 		// REFACTOR: Skip nodes' elements containing "gen" prefix and assume that every ID prefix always begins with "gen"
@@ -154,7 +155,7 @@ public class GeneratedCSVReader implements DataReader
 
 				if ( groupIndex == -1 ) {
 					// Group for this id doesn't exist yet. Create it.
-					BasicGroup newGroup = new BasicGroup( lineValues[0], null );
+					BasicGroup newGroup = new BasicGroup( lineValues[0], null, useSubtree );
 					groups.add( newGroup );
 
 					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), values, trueClassAttr ) );
@@ -171,7 +172,7 @@ public class GeneratedCSVReader implements DataReader
 			}
 		}
 
-		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fixBreadthGaps );
+		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fixBreadthGaps, useSubtree );
 
 		if ( root == null ) {
 			// If root was missing from input file, then it must've been created artificially - find it.

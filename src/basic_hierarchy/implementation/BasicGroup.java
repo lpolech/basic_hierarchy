@@ -12,9 +12,10 @@ public class BasicGroup implements Group
 	private Group parent;
 	private LinkedList<Group> children;
 	private LinkedList<Instance> instances;
+	private Instance representation;
 
 
-	public BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances )
+	private BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances )
 	{
 		this.id = id;
 		this.parent = parent;
@@ -22,9 +23,26 @@ public class BasicGroup implements Group
 		this.instances = instances;
 	}
 
-	public BasicGroup( String id, Group parent )
+	public BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances, boolean useSubtree )
 	{
-		this( id, parent, new LinkedList<Group>(), new LinkedList<Instance>() );
+		this( id, parent, children, instances );
+		this.representation = recalculateCentroid( useSubtree );
+	}
+
+	public BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances, Instance representation )
+	{
+		this( id, parent, children, instances );
+		this.representation = representation;
+	}
+
+	public BasicGroup( String id, Group parent, boolean useSubtree )
+	{
+		this( id, parent, new LinkedList<Group>(), new LinkedList<Instance>(), useSubtree );
+	}
+
+	public BasicGroup( String id, Group parent, Instance representation )
+	{
+		this( id, parent, new LinkedList<Group>(), new LinkedList<Instance>(), representation );
 	}
 
 	public void setParent( Group parent )
@@ -102,8 +120,7 @@ public class BasicGroup implements Group
 	@Override
 	public Instance getGroupRepresentation()
 	{
-		// TODO: find the centroid/medoid node and return it
-		throw new UnsupportedOperationException( "Not implemented yet." );
+		return this.representation;
 	}
 
 	@Override
@@ -145,5 +162,32 @@ public class BasicGroup implements Group
 		}
 
 		return buf.toString();
+	}
+
+	/**
+	 * Recalculates the centroid for this group, and updates this group's representation.
+	 * 
+	 * @param useSubtree
+	 *            whether the calculation should also include child groups' instances.
+	 * @return the calculated centroid
+	 */
+	public Instance recalculateCentroid( boolean useSubtree )
+	{
+		LinkedList<Instance> instances = useSubtree ? getSubgroupInstances() : getInstances();
+
+		double[] centroidCoordinates = new double[instances.isEmpty() ? 0 : instances.getFirst().getData().length];
+		for ( Instance inst : instances ) {
+			double[] instanceData = inst.getData();
+			for ( int i = 0; i < centroidCoordinates.length; i++ ) {
+				centroidCoordinates[i] += instanceData[i];
+			}
+		}
+
+		for ( int i = 0; i < centroidCoordinates.length; i++ ) {
+			centroidCoordinates[i] /= instances.size();
+		}
+
+		this.representation = new BasicInstance( "centroid", "centroid", centroidCoordinates, "centroid" );
+		return this.representation;
 	}
 }

@@ -20,6 +20,8 @@ public interface DataReader
 	 *            if true, the reader will assume that the first row contains column headers, specifying the name for each column
 	 * @param fixBreadthGaps
 	 *            if true, the {@link HierarchyBuilder} will attempt to fix the raw hierarchy built from the file.
+	 * @param useSubtree
+	 *            whether the centroid calculation should also include child groups' instances.
 	 * @return the {@link Hierarchy} object representing data in the input file
 	 */
 	public Hierarchy load(
@@ -27,5 +29,6 @@ public interface DataReader
 		boolean withInstancesNameAttribute,
 		boolean withTrueClassAttribute,
 		boolean withColumnHeaders,
-		boolean fixBreadthGaps ) throws IOException;
+		boolean fixBreadthGaps,
+		boolean useSubtree ) throws IOException;
 }
