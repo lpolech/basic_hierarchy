@@ -2,20 +2,20 @@ package basic_hierarchy.implementation;
 
 import java.util.LinkedList;
 
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Instance;
 
 
-public class BasicGroup implements Group
+public class BasicNode implements Node
 {
 	private String id;
-	private Group parent;
-	private LinkedList<Group> children;
+	private Node parent;
+	private LinkedList<Node> children;
 	private LinkedList<Instance> instances;
 	private Instance representation;
 
 
-	private BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances )
+	private BasicNode( String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances )
 	{
 		this.id = id;
 		this.parent = parent;
@@ -23,29 +23,29 @@ public class BasicGroup implements Group
 		this.instances = instances;
 	}
 
-	public BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances, boolean useSubtree )
+	public BasicNode( String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances, boolean useSubtree )
 	{
 		this( id, parent, children, instances );
 		this.representation = recalculateCentroid( useSubtree );
 	}
 
-	public BasicGroup( String id, Group parent, LinkedList<Group> children, LinkedList<Instance> instances, Instance representation )
+	public BasicNode( String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances, Instance representation )
 	{
 		this( id, parent, children, instances );
 		this.representation = representation;
 	}
 
-	public BasicGroup( String id, Group parent, boolean useSubtree )
+	public BasicNode( String id, Node parent, boolean useSubtree )
 	{
-		this( id, parent, new LinkedList<Group>(), new LinkedList<Instance>(), useSubtree );
+		this( id, parent, new LinkedList<Node>(), new LinkedList<Instance>(), useSubtree );
 	}
 
-	public BasicGroup( String id, Group parent, Instance representation )
+	public BasicNode( String id, Node parent, Instance representation )
 	{
-		this( id, parent, new LinkedList<Group>(), new LinkedList<Instance>(), representation );
+		this( id, parent, new LinkedList<Node>(), new LinkedList<Instance>(), representation );
 	}
 
-	public void setParent( Group parent )
+	public void setParent( Node parent )
 	{
 		this.parent = parent;
 	}
@@ -55,12 +55,12 @@ public class BasicGroup implements Group
 		this.id = id;
 	}
 
-	public void setChildren( LinkedList<Group> children )
+	public void setChildren( LinkedList<Node> children )
 	{
 		this.children = children;
 	}
 
-	public void addChild( Group child )
+	public void addChild( Node child )
 	{
 		this.children.add( child );
 	}
@@ -82,7 +82,7 @@ public class BasicGroup implements Group
 	}
 
 	@Override
-	public Group getParent()
+	public Node getParent()
 	{
 		return parent;
 	}
@@ -94,31 +94,31 @@ public class BasicGroup implements Group
 	}
 
 	@Override
-	public LinkedList<Group> getChildren()
+	public LinkedList<Node> getChildren()
 	{
 		return children;
 	}
 
 	@Override
-	public LinkedList<Instance> getInstances()
+	public LinkedList<Instance> getNodeInstances()
 	{
 		return instances;
 	}
 
 	@Override
-	public LinkedList<Instance> getSubgroupInstances()
+	public LinkedList<Instance> getSubtreeInstances()
 	{
 		LinkedList<Instance> result = new LinkedList<Instance>( instances );
 
-		for ( Group child : children ) {
-			result.addAll( child.getSubgroupInstances() );
+		for ( Node child : children ) {
+			result.addAll( child.getSubtreeInstances() );
 		}
 
 		return result;
 	}
 
 	@Override
-	public Instance getGroupRepresentation()
+	public Instance getNodeRepresentation()
 	{
 		return this.representation;
 	}
@@ -127,6 +127,11 @@ public class BasicGroup implements Group
 	public String toString()
 	{
 		return print( "", true );
+	}
+
+	public void printSubtree()
+	{
+		System.out.println( toString() );
 	}
 
 	private String print( String prefix, boolean isTail )
@@ -145,18 +150,18 @@ public class BasicGroup implements Group
 
 		// Print all children except last
 		for ( int i = 0; i < children.size() - 1; ++i ) {
-			Group n = children.get( i );
-			if ( n instanceof BasicGroup ) {
-				buf.append( ( (BasicGroup)n ).print( childPrefix, false ) )
+			Node n = children.get( i );
+			if ( n instanceof BasicNode ) {
+				buf.append( ( (BasicNode)n ).print( childPrefix, false ) )
 					.append( '\n' );
 			}
 		}
 
 		// Print the last child as tail
 		if ( children.size() > 0 ) {
-			Group n = children.get( children.size() - 1 );
-			if ( n instanceof BasicGroup ) {
-				buf.append( ( (BasicGroup)n ).print( childPrefix, true ) )
+			Node n = children.get( children.size() - 1 );
+			if ( n instanceof BasicNode ) {
+				buf.append( ( (BasicNode)n ).print( childPrefix, true ) )
 					.append( '\n' );
 			}
 		}
@@ -173,7 +178,7 @@ public class BasicGroup implements Group
 	 */
 	public Instance recalculateCentroid( boolean useSubtree )
 	{
-		LinkedList<Instance> instances = useSubtree ? getSubgroupInstances() : getInstances();
+		LinkedList<Instance> instances = useSubtree ? getSubtreeInstances() : getNodeInstances();
 
 		double[] centroidCoordinates = new double[instances.isEmpty() ? 0 : instances.getFirst().getData().length];
 		for ( Instance inst : instances ) {

@@ -12,18 +12,18 @@ import java.util.List;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
-import basic_hierarchy.implementation.BasicGroup;
+import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.interfaces.DataReader;
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
 
 
 public class GeneratedCSVReader implements DataReader
 {
 	/**
-	 * This method assumes that data are generated using Micha≥ Spytkowski's data generator, using TSSB method.
+	 * This method assumes that data are generated using Micha≈Ç Spytkowski's data generator, using TSSB method.
 	 * <p>
 	 * The first node listed is always the root node. It is also the only node without a parent.
 	 * Nodes are given in depth-first order.
@@ -53,8 +53,8 @@ public class GeneratedCSVReader implements DataReader
 			);
 		}
 
-		BasicGroup root = null;
-		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
+		BasicNode root = null;
+		ArrayList<BasicNode> groups = new ArrayList<BasicNode>();
 		String[] dataNames = null;
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 
@@ -155,7 +155,7 @@ public class GeneratedCSVReader implements DataReader
 
 				if ( groupIndex == -1 ) {
 					// Group for this id doesn't exist yet. Create it.
-					BasicGroup newGroup = new BasicGroup( lineValues[0], null, useSubtree );
+					BasicNode newGroup = new BasicNode( lineValues[0], null, useSubtree );
 					groups.add( newGroup );
 
 					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), values, trueClassAttr ) );
@@ -172,14 +172,14 @@ public class GeneratedCSVReader implements DataReader
 			}
 		}
 
-		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fixBreadthGaps, useSubtree );
+		List<? extends Node> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fixBreadthGaps, useSubtree );
 
 		if ( root == null ) {
 			// If root was missing from input file, then it must've been created artificially - find it.
 			// List of groups should be sorted by ID, therefore finding root should have negligible overhead.
-			for ( Group group : allGroups ) {
+			for ( Node group : allGroups ) {
 				if ( group.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
-					root = (BasicGroup)group;
+					root = (BasicNode)group;
 					break;
 				}
 			}

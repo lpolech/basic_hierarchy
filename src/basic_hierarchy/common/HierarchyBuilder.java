@@ -7,8 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import basic_hierarchy.implementation.BasicGroup;
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.implementation.BasicNode;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
 
 
@@ -37,13 +37,13 @@ public class HierarchyBuilder
 	 *            whether the centroid calculation should also include child groups' instances.
 	 * @return the complete 'fixed' collection of groups, filled with artificial groups
 	 */
-	public static List<? extends Group> buildCompleteGroupHierarchy(
-		BasicGroup root, List<BasicGroup> groups,
+	public static List<? extends Node> buildCompleteGroupHierarchy(
+		BasicNode root, List<BasicNode> groups,
 		boolean fixBreadthGaps, boolean useSubtree )
 	{
 		if ( root == null ) {
 			// Root node was missing from input file - create it artificially.
-			root = new BasicGroup( Constants.ROOT_ID, null, useSubtree );
+			root = new BasicNode( Constants.ROOT_ID, null, useSubtree );
 			groups.add( 0, root );
 		}
 
@@ -54,11 +54,11 @@ public class HierarchyBuilder
 			groups = fixBreadthGaps( root, groups, useSubtree );
 		}
 
-		for ( BasicGroup g : groups ) {
+		for ( BasicNode g : groups ) {
 			g.recalculateCentroid( useSubtree );
 		}
 
-		groups.sort( new GroupComparator() );
+		groups.sort( new NodeIdComparator() );
 
 		return groups;
 	}
@@ -71,17 +71,17 @@ public class HierarchyBuilder
 	 * </p>
 	 * <p>
 	 * This means that this method DOES NOT GUARANTEE that the hierarchy it creates will be contiguous.
-	 * To fix this, follow-up this method with {@link #fixDepthGaps(BasicGroup, List)} and/or
-	 * {@link #fixBreadthGaps(BasicGroup, List)}
+	 * To fix this, follow-up this method with {@link #fixDepthGaps(BasicNode, List)} and/or
+	 * {@link #fixBreadthGaps(BasicNode, List)}
 	 * </p>
 	 * 
 	 * @param groups
 	 *            collection of all groups to build the hierarchy from
 	 */
-	private static void buildGroupHierarchy( List<BasicGroup> groups )
+	private static void buildGroupHierarchy( List<BasicNode> groups )
 	{
 		for ( int i = 0; i < groups.size(); ++i ) {
-			BasicGroup parentGroup = groups.get( i );
+			BasicNode parentGroup = groups.get( i );
 			String[] parentBranchIds = getGroupBranchIds( parentGroup );
 
 			for ( int j = 0; j < groups.size(); ++j ) {
@@ -90,7 +90,7 @@ public class HierarchyBuilder
 					continue;
 				}
 
-				BasicGroup childGroup = groups.get( j );
+				BasicNode childGroup = groups.get( j );
 				String[] childBranchIds = getGroupBranchIds( childGroup );
 
 				if ( areGroupsDirectlyRelated( parentBranchIds, childBranchIds ) ) {
@@ -116,14 +116,14 @@ public class HierarchyBuilder
 	 *            whether the cntroid calculation should also include child groups' instances.
 	 * @return the complete 'fixed' collection of groups, filled with artificial groups
 	 */
-	private static List<BasicGroup> fixDepthGaps( BasicGroup root, List<BasicGroup> groups, boolean useSubtree )
+	private static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> groups, boolean useSubtree )
 	{
-		List<BasicGroup> artificialGroups = new ArrayList<BasicGroup>();
+		List<BasicNode> artificialGroups = new ArrayList<BasicNode>();
 
 		StringBuilder buf = new StringBuilder();
 
 		for ( int i = 0; i < groups.size(); ++i ) {
-			BasicGroup group = groups.get( i );
+			BasicNode group = groups.get( i );
 
 			if ( group == root ) {
 				// Don't consider the root group.
@@ -133,11 +133,11 @@ public class HierarchyBuilder
 			if ( group.getParent() == null ) {
 				String[] groupBranchIds = getGroupBranchIds( group );
 
-				BasicGroup nearestParent = null;
+				BasicNode nearestParent = null;
 				int nearestParentHeight = -1;
 
 				// Try to find nearest parent in 'real' groups
-				BasicGroup candidateGroup = findNearestAncestor( groups, groupBranchIds, -1, i );
+				BasicNode candidateGroup = findNearestAncestor( groups, groupBranchIds, -1, i );
 				if ( candidateGroup != null ) {
 					nearestParent = candidateGroup;
 					nearestParentHeight = getGroupBranchIds( candidateGroup ).length;
@@ -151,7 +151,7 @@ public class HierarchyBuilder
 				}
 
 				if ( nearestParent != null ) {
-					BasicGroup newParent = nearestParent;
+					BasicNode newParent = nearestParent;
 
 					for ( int j = nearestParentHeight; j < groupBranchIds.length - 1; ++j ) {
 						buf.setLength( 0 );
@@ -163,7 +163,7 @@ public class HierarchyBuilder
 							.toString();
 
 						// Add an empty group
-						BasicGroup newGroup = new BasicGroup(
+						BasicNode newGroup = new BasicNode(
 							newGroupId, newParent, useSubtree
 						);
 
@@ -191,7 +191,7 @@ public class HierarchyBuilder
 			}
 		}
 
-		List<BasicGroup> allGroups = new ArrayList<BasicGroup>( artificialGroups );
+		List<BasicNode> allGroups = new ArrayList<BasicNode>( artificialGroups );
 		allGroups.addAll( groups );
 
 		return allGroups;
@@ -212,31 +212,31 @@ public class HierarchyBuilder
 	 *            whether the cntroid calculation should also include child groups' instances.
 	 * @return the complete 'fixed' collection of groups, filled with artificial groups
 	 */
-	private static List<BasicGroup> fixBreadthGaps( BasicGroup root, List<BasicGroup> groups, boolean useSubtree )
+	private static List<BasicNode> fixBreadthGaps( BasicNode root, List<BasicNode> groups, boolean useSubtree )
 	{
-		List<BasicGroup> artificialGroups = new ArrayList<BasicGroup>();
+		List<BasicNode> artificialGroups = new ArrayList<BasicNode>();
 
-		Comparator<Group> groupComparator = new GroupComparator();
+		Comparator<Node> groupComparator = new NodeIdComparator();
 		StringBuilder buf = new StringBuilder();
 
-		Queue<BasicGroup> pendingGroups = new LinkedList<BasicGroup>();
+		Queue<BasicNode> pendingGroups = new LinkedList<BasicNode>();
 		pendingGroups.add( root );
 
 		while ( !pendingGroups.isEmpty() ) {
-			BasicGroup currentGroup = pendingGroups.remove();
+			BasicNode currentGroup = pendingGroups.remove();
 
-			List<Group> children = currentGroup.getChildren();
-			List<Group> newChildren = new LinkedList<Group>();
+			List<Node> children = currentGroup.getChildren();
+			List<Node> newChildren = new LinkedList<Node>();
 
 			for ( int i = 0; i < children.size(); ++i ) {
-				Group childGroup = children.get( i );
+				Node childGroup = children.get( i );
 
 				if ( childGroup == null ) {
 					// If i-th child doesn't exist, then there's a gap. Fix it.
 					buf.setLength( 0 );
 					buf.append( currentGroup.getId() ).append( Constants.HIERARCHY_BRANCH_SEPARATOR ).append( i );
 
-					BasicGroup newGroup = new BasicGroup( buf.toString(), currentGroup, useSubtree );
+					BasicNode newGroup = new BasicNode( buf.toString(), currentGroup, useSubtree );
 					newGroup.setParent( currentGroup );
 
 					newChildren.add( newGroup );
@@ -244,7 +244,7 @@ public class HierarchyBuilder
 				}
 				else {
 					if ( areGroupsRelated( currentGroup, childGroup ) ) {
-						pendingGroups.add( (BasicGroup)childGroup );
+						pendingGroups.add( (BasicNode)childGroup );
 					}
 					else {
 						throw new RuntimeException(
@@ -258,13 +258,13 @@ public class HierarchyBuilder
 				}
 			}
 
-			for ( Group g : newChildren ) {
+			for ( Node g : newChildren ) {
 				currentGroup.addChild( g );
 			}
 			children.sort( groupComparator );
 		}
 
-		List<BasicGroup> allGroups = new ArrayList<BasicGroup>( artificialGroups );
+		List<BasicNode> allGroups = new ArrayList<BasicNode>( artificialGroups );
 		allGroups.addAll( groups );
 
 		return allGroups;
@@ -273,7 +273,7 @@ public class HierarchyBuilder
 	/**
 	 * {@link #findNearestAncestor(List, String[], int, int)}
 	 */
-	private static BasicGroup findNearestAncestor( List<BasicGroup> groups, String[] childBranchIds, int nearestHeight )
+	private static BasicNode findNearestAncestor( List<BasicNode> groups, String[] childBranchIds, int nearestHeight )
 	{
 		return findNearestAncestor( groups, childBranchIds, nearestHeight, -1 );
 	}
@@ -295,16 +295,16 @@ public class HierarchyBuilder
 	 *            max index to search to in the list of groups, for bounding purposes (can be negative to perform an unbounded search)
 	 * @return the nearest group that can act as an ancestor, or null if not found
 	 */
-	private static BasicGroup findNearestAncestor( List<BasicGroup> groups, String[] childBranchIds, int nearestHeight, int maxIndex )
+	private static BasicNode findNearestAncestor( List<BasicNode> groups, String[] childBranchIds, int nearestHeight, int maxIndex )
 	{
 		if ( maxIndex < 0 ) {
 			maxIndex = groups.size();
 		}
 
-		BasicGroup result = null;
+		BasicNode result = null;
 
 		for ( int i = 0; i < maxIndex; ++i ) {
-			BasicGroup parentGroup = groups.get( i );
+			BasicNode parentGroup = groups.get( i );
 			String[] parentBranchIds = getGroupBranchIds( parentGroup );
 
 			if ( parentBranchIds.length > nearestHeight ) {
@@ -321,7 +321,7 @@ public class HierarchyBuilder
 	/**
 	 * Convenience method to split a group's IDs into segments for easier processing.
 	 */
-	private static String[] getGroupBranchIds( Group g )
+	private static String[] getGroupBranchIds( Node g )
 	{
 		String[] result = g.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
 		// Ignore the first index ('gen')
@@ -331,7 +331,7 @@ public class HierarchyBuilder
 	/**
 	 * {@link #areGroupsDirectlyRelated(String[], String[])}
 	 */
-	private static boolean areGroupsDirectlyRelated( Group parent, Group child )
+	private static boolean areGroupsDirectlyRelated( Node parent, Node child )
 	{
 		return areGroupsDirectlyRelated( getGroupBranchIds( parent ), getGroupBranchIds( child ) );
 	}
@@ -362,7 +362,7 @@ public class HierarchyBuilder
 	/**
 	 * {@link #areGroupsRelated(String[], String[])}
 	 */
-	private static boolean areGroupsRelated( Group parent, Group child )
+	private static boolean areGroupsRelated( Node parent, Node child )
 	{
 		return areGroupsRelated( getGroupBranchIds( parent ), getGroupBranchIds( child ) );
 	}

@@ -7,11 +7,11 @@ import java.util.List;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
-import basic_hierarchy.implementation.BasicGroup;
+import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.interfaces.DataReader;
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -60,8 +60,8 @@ public class GeneratedARFFReader implements DataReader
 				+ "\nNumber of classes: " + data.numClasses()
 		);
 
-		BasicGroup root = null;
-		ArrayList<BasicGroup> groups = new ArrayList<BasicGroup>();
+		BasicNode root = null;
+		ArrayList<BasicNode> groups = new ArrayList<BasicNode>();
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 
 		int numberOfDimensions = data.numAttributes() - 1; // minus assign class attribute
@@ -130,20 +130,20 @@ public class GeneratedARFFReader implements DataReader
 				);
 			}
 			else {
-				BasicGroup newGroup = new BasicGroup( assignClass, null, useSubtree );
+				BasicNode newGroup = new BasicNode( assignClass, null, useSubtree );
 				newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), instanceData, classAttr ) );
 				groups.add( newGroup );
 			}
 		}
 
-		List<? extends Group> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps, useSubtree );
+		List<? extends Node> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fillBreadthGaps, useSubtree );
 
 		if ( root == null ) {
 			// If root was missing from input file, then it must've been created artificially - find it.
 			// List of groups should be sorted by ID, therefore finding root should have negligible overhead.
-			for ( Group group : allGroups ) {
+			for ( Node group : allGroups ) {
 				if ( group.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
-					root = (BasicGroup)group;
+					root = (BasicNode)group;
 					break;
 				}
 			}

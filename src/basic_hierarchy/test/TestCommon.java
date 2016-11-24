@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.implementation.BasicGroup;
+import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Instance;
 
@@ -30,16 +30,16 @@ public class TestCommon
 		LinkedList<Instance> firstClusterInstances = new LinkedList<>();
 		firstClusterInstances.add( new BasicInstance( "11", rootId, new double[] { 1.0, 2.0 }, rootId ) );
 		firstClusterInstances.add( new BasicInstance( "12", rootId, new double[] { 3.0, 4.0 }, rootId ) );
-		BasicGroup firstCluster = new BasicGroup( rootId, null, new LinkedList<Group>(), firstClusterInstances, false );
+		BasicNode firstCluster = new BasicNode( rootId, null, new LinkedList<Node>(), firstClusterInstances, false );
 
 		LinkedList<Instance> secondClusterInstances = new LinkedList<Instance>();
 		secondClusterInstances.add( new BasicInstance( "21", childId, new double[] { 1.5, 2.5 }, childId ) );
 		secondClusterInstances.add( new BasicInstance( "22", childId, new double[] { 3.5, 4.5 }, rootId ) );
-		BasicGroup secondCluster = new BasicGroup( childId, firstCluster, new LinkedList<Group>(), secondClusterInstances, false );
+		BasicNode secondCluster = new BasicNode( childId, firstCluster, new LinkedList<Node>(), secondClusterInstances, false );
 
 		firstCluster.addChild( secondCluster );
 
-		LinkedList<Group> groups = new LinkedList<>();
+		LinkedList<Node> groups = new LinkedList<>();
 		groups.add( firstCluster );
 		groups.add( secondCluster );
 		HashMap<String, Integer> eachClassWithCount = new HashMap<>();
@@ -60,23 +60,23 @@ public class TestCommon
 		LinkedList<Instance> rootClusterInstances = new LinkedList<>();
 		rootClusterInstances.add( new BasicInstance( "11", rootId, new double[] { 1.0, 2.0 }, rootId ) );
 		rootClusterInstances.add( new BasicInstance( "12", rootId, new double[] { 3.0, 4.0 }, rootId ) );
-		BasicGroup rootCluster = new BasicGroup(
-			rootId, null, new LinkedList<Group>(), rootClusterInstances, false
+		BasicNode rootCluster = new BasicNode(
+			rootId, null, new LinkedList<Node>(), rootClusterInstances, false
 		);
 
 		LinkedList<Instance> rootFirstChildInstances = new LinkedList<Instance>();
 		rootFirstChildInstances.add( new BasicInstance( "21", rootFirstChildId, new double[] { 1.5, 2.5 }, rootFirstChildId ) );
 		rootFirstChildInstances.add( new BasicInstance( "22", rootFirstChildId, new double[] { 3.5, 4.5 }, rootFirstChildFirstChildId ) );
-		BasicGroup rootFirstChildCluster = new BasicGroup(
-			rootFirstChildId, rootCluster, new LinkedList<Group>(), rootFirstChildInstances, false
+		BasicNode rootFirstChildCluster = new BasicNode(
+			rootFirstChildId, rootCluster, new LinkedList<Node>(), rootFirstChildInstances, false
 		);
 
 		LinkedList<Instance> rootSecondChildInstances = new LinkedList<Instance>();
 		rootSecondChildInstances.add( new BasicInstance( "31", rootSecondChildId, new double[] { -1.5, 2.5 }, rootFirstChildId ) );
 		rootSecondChildInstances.add( new BasicInstance( "32", rootSecondChildId, new double[] { 3.5, -4.5 }, rootId ) );
 		rootSecondChildInstances.add( new BasicInstance( "33", rootSecondChildId, new double[] { -3.5, -4.5 }, rootSecondChildId ) );
-		BasicGroup rootSecondChildCluster = new BasicGroup(
-			rootSecondChildId, rootCluster, new LinkedList<Group>(), rootSecondChildInstances, false
+		BasicNode rootSecondChildCluster = new BasicNode(
+			rootSecondChildId, rootCluster, new LinkedList<Node>(), rootSecondChildInstances, false
 		);
 
 		LinkedList<Instance> rootFirstChildFirstChildInstances = new LinkedList<Instance>();
@@ -92,15 +92,15 @@ public class TestCommon
 		rootFirstChildFirstChildInstances.add(
 			new BasicInstance( "44", rootFirstChildFirstChildId, new double[] { 0.25, 0.75 }, rootId )
 		);
-		BasicGroup rootFirstChildFirstChildCluster = new BasicGroup(
-			rootFirstChildFirstChildId, rootFirstChildCluster, new LinkedList<Group>(), rootFirstChildFirstChildInstances, false
+		BasicNode rootFirstChildFirstChildCluster = new BasicNode(
+			rootFirstChildFirstChildId, rootFirstChildCluster, new LinkedList<Node>(), rootFirstChildFirstChildInstances, false
 		);
 
 		rootCluster.addChild( rootFirstChildCluster );
 		rootCluster.addChild( rootSecondChildCluster );
 		rootFirstChildCluster.addChild( rootFirstChildFirstChildCluster );
 
-		LinkedList<Group> groups = new LinkedList<>();
+		LinkedList<Node> groups = new LinkedList<>();
 		groups.add( rootCluster );
 		groups.add( rootFirstChildCluster );
 		groups.add( rootSecondChildCluster );

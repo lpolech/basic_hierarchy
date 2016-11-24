@@ -2,7 +2,7 @@ package basic_hierarchy.common;
 
 import java.util.Comparator;
 
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 
 
 /**
@@ -11,7 +11,7 @@ import basic_hierarchy.interfaces.Group;
  * Implementation compares the two groups' IDs using {@linkplain StringIdComparator}.
  * </p>
  */
-public class GroupComparator implements Comparator<Group>
+public class NodeIdComparator implements Comparator<Node>
 {
 	private StringIdComparator idComparator = new StringIdComparator();
 
@@ -22,7 +22,7 @@ public class GroupComparator implements Comparator<Group>
 	 * @see Comparator#compare(Object, Object)
 	 */
 	@Override
-	public int compare( Group o1, Group o2 )
+	public int compare( Node o1, Node o2 )
 	{
 		String o1Id = o1.getId();
 		String o2Id = o2.getId();

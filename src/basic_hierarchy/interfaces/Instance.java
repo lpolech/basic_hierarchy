@@ -24,5 +24,7 @@ public interface Instance
 	/**
 	 * @return id of the group to which this instance has been assigned ('assigned class').
 	 */
-	public String getAssignedClass();
+	public String getNodeId();
+
+	public void setNodeId( String id );
 }

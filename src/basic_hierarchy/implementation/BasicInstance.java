@@ -37,19 +37,20 @@ public class BasicInstance implements Instance
 	}
 
 	@Override
-	public String getAssignedClass()
+	public String getNodeId()
 	{
 		return assignedClass;
+	}
+
+	@Override
+	public void setNodeId( String assignedClass )
+	{
+		this.assignedClass = assignedClass;
 	}
 
 	@Override
 	public String getTrueClass()
 	{
 		return trueClass;
-	}
-
-	public void setAssignedClass( String assignedClass )
-	{
-		this.assignedClass = assignedClass;
 	}
 }

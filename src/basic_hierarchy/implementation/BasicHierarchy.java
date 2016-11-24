@@ -7,14 +7,14 @@ import java.util.Map;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.StringIdComparator;
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
 
 
 public class BasicHierarchy implements Hierarchy
 {
-	private Group root;
-	private Group[] groups;
+	private Node root;
+	private Node[] groups;
 	private String[] classes;
 	private String[] dataNames;
 	private int[] classCounts;
@@ -22,7 +22,7 @@ public class BasicHierarchy implements Hierarchy
 
 
 	public BasicHierarchy(
-		Group root, List<? extends Group> groups,
+		Node root, List<? extends Node> groups,
 		String[] dataNames,
 		Map<String, Integer> eachClassWithCount )
 	{
@@ -31,11 +31,11 @@ public class BasicHierarchy implements Hierarchy
 		}
 
 		this.root = root;
-		this.groups = groups.toArray( new BasicGroup[groups.size()] );
+		this.groups = groups.toArray( new BasicNode[groups.size()] );
 		this.dataNames = dataNames;
 
-		for ( Group g : groups ) {
-			this.instanceCount += g.getInstances().size();
+		for ( Node g : groups ) {
+			this.instanceCount += g.getNodeInstances().size();
 		}
 
 		classes = new String[eachClassWithCount.size()];
@@ -52,25 +52,25 @@ public class BasicHierarchy implements Hierarchy
 	}
 
 	@Override
-	public Group getRoot()
+	public Node getRoot()
 	{
 		return root;
 	}
 
 	@Override
-	public int getGroupCount()
+	public int getNumberOfGroups()
 	{
 		return groups.length;
 	}
 
 	@Override
-	public int getClassCount()
+	public int getNumberOfClasses()
 	{
 		return classes.length;
 	}
 
 	@Override
-	public Group[] getGroups()
+	public Node[] getGroups()
 	{
 		return groups;
 	}
@@ -82,7 +82,7 @@ public class BasicHierarchy implements Hierarchy
 	}
 
 	@Override
-	public int getInstanceCount()
+	public int getNumberOfInstances()
 	{
 		return instanceCount;
 	}
@@ -130,5 +130,10 @@ public class BasicHierarchy implements Hierarchy
 		}
 
 		throw new RuntimeException( "Implementation error: this hierarchy has no root node." );
+	}
+
+	public void printTree()
+	{
+		root.printSubtree();
 	}
 }

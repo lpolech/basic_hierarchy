@@ -7,17 +7,17 @@ import java.util.LinkedList;
 import org.junit.Before;
 
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.implementation.BasicGroup;
+import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.implementation.BasicInstance;
-import basic_hierarchy.interfaces.Group;
+import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.test.TestCommon;
 
 
 public class BasicGroupTest
 {
-	private BasicGroup node;
-	private BasicGroup child;
+	private BasicNode node;
+	private BasicNode child;
 
 
 	@Before
@@ -37,8 +37,8 @@ public class BasicGroupTest
 		childInstances.add( new BasicInstance( "third", firstChildNodeId, new double[] { -4.0, 0.0 }, null ) );
 		childInstances.add( new BasicInstance( "fourth", firstChildNodeId, new double[] { 0.0, -1.5 }, null ) );
 
-		node = new BasicGroup( Constants.ROOT_ID, null, new LinkedList<Group>(), instances, false );
-		child = new BasicGroup( firstChildNodeId, node, new LinkedList<Group>(), childInstances, false );
+		node = new BasicNode( Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false );
+		child = new BasicNode( firstChildNodeId, node, new LinkedList<Node>(), childInstances, false );
 		node.addChild( child );
 	}
 
@@ -46,11 +46,11 @@ public class BasicGroupTest
 	public void calculateSimpleCentroid() throws Exception
 	{
 		assertArrayEquals(
-			new double[] { 0.5, 1.0 }, node.getGroupRepresentation().getData(),
+			new double[] { 0.5, 1.0 }, node.getNodeRepresentation().getData(),
 			TestCommon.DOUBLE_COMPARISION_DELTA
 		);
 		assertArrayEquals(
-			new double[] { -0.25, -1.0 }, child.getGroupRepresentation().getData(),
+			new double[] { -0.25, -1.0 }, child.getNodeRepresentation().getData(),
 			TestCommon.DOUBLE_COMPARISION_DELTA
 		);
 	}
@@ -61,11 +61,11 @@ public class BasicGroupTest
 		node.recalculateCentroid( true );
 
 		assertArrayEquals(
-			new double[] { 0.071428571, -0.142857143 }, node.getGroupRepresentation().getData(),
+			new double[] { 0.071428571, -0.142857143 }, node.getNodeRepresentation().getData(),
 			TestCommon.DOUBLE_COMPARISION_DELTA
 		);
 		assertArrayEquals(
-			new double[] { -0.25, -1.0 }, child.getGroupRepresentation().getData(),
+			new double[] { -0.25, -1.0 }, child.getNodeRepresentation().getData(),
 			TestCommon.DOUBLE_COMPARISION_DELTA
 		);
 	}
