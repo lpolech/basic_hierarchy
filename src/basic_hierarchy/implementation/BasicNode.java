@@ -29,7 +29,7 @@ public class BasicNode implements Node {
                      boolean useSubtree)
 	{
 		this(id, parent, children, instances);
-        this.representation = recalculateCentroid(useSubtree);
+		recalculateCentroid(useSubtree);
 	}
 
     public BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances,
@@ -39,27 +39,38 @@ public class BasicNode implements Node {
         this.representation = representation;
     }
 
+	@Override
 	public void setParent(Node parent) {
 		this.parent = parent;
 	}
 
+	@Override
 	public void setChildren(LinkedList<Node> children) {
 		this.children = children;
 	}
-	
+
+	@Override
 	public void addChild(Node child)
 	{
 		this.children.add(child);
 	}
 
+	@Override
 	public void addInstance(Instance instance)
 	{
 		this.instances.add(instance);
 	}
-	
+
+	@Override
 	public void setInstances(LinkedList<Instance> instances) {
 		this.instances = instances;
 	}
+
+	@Override
+	public void setRepresentation(Instance representation)
+    {
+        this.representation = representation;
+    }
 
 	@Override
 	public String getId() {
@@ -136,7 +147,8 @@ public class BasicNode implements Node {
             centroidCoordinates[i] /= instances.size();
         }
 
+        Instance oldRepresentation = this.representation;
         this.representation = new BasicInstance("centroid", "centroid", centroidCoordinates, "centroid");
-        return this.representation;
+        return oldRepresentation;
     }
 }

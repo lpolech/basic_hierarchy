@@ -20,5 +20,18 @@ public interface Node {
 	 * Could be node centroid or medoid
 	 */
 	public Instance getNodeRepresentation();
+
+	public void setParent(Node parent);
+
+	public void setChildren(LinkedList<Node> children);
+
+	public void addChild(Node child);
+
+	public void addInstance(Instance instance);
+
+	public void setInstances(LinkedList<Instance> instances);
+
+	public void setRepresentation(Instance representation);
+
 	public void printSubtree();
 }
