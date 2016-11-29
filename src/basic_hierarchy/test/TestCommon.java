@@ -44,6 +44,44 @@ public class TestCommon {
         return new BasicHierarchy(firstCluster, groups, eachClassWithCount, 4);
     }
 
+    public static Hierarchy getTwoGroupsHierarchyWithEmptyNodes() {
+        String rootId = basic_hierarchy.common.Constants.ROOT_ID;
+        BasicNode emptyRootCluster = new BasicNode(rootId, null, new LinkedList<Node>(), new LinkedList<Instance>(), false);
+
+        String rootFirstChildId = TestCommon.getIDOfChildCluster(rootId, 0);
+        LinkedList<Instance> rootFirstChildClusterInstances = new LinkedList<>();
+        rootFirstChildClusterInstances.add(new BasicInstance("11", rootFirstChildId, new double[]{1.0, 2.0}, rootFirstChildId));
+        rootFirstChildClusterInstances.add(new BasicInstance("12", rootFirstChildId, new double[]{3.0, 4.0}, rootFirstChildId));
+        BasicNode rootFirstChildCluster = new BasicNode(rootFirstChildId, emptyRootCluster, new LinkedList<Node>(),
+                rootFirstChildClusterInstances, false);
+        emptyRootCluster.addChild(rootFirstChildCluster);
+
+        String emptyInternalClusterId = TestCommon.getIDOfChildCluster(rootFirstChildId, 0);
+        BasicNode emptyInternalCluster = new BasicNode(emptyInternalClusterId,
+                rootFirstChildCluster, new LinkedList<Node>(), new LinkedList<Instance>(), false);
+
+        rootFirstChildCluster.addChild(emptyInternalCluster);
+
+        LinkedList<Instance> emptyInternalFirstChildInstances = new LinkedList<Instance>();
+        String emptyInternalFirstChildId = TestCommon.getIDOfChildCluster(emptyInternalClusterId, 0);
+        emptyInternalFirstChildInstances.add(new BasicInstance("21", emptyInternalFirstChildId, new double[]{1.5, 2.5}, emptyInternalFirstChildId));
+        emptyInternalFirstChildInstances.add(new BasicInstance("22", emptyInternalFirstChildId, new double[]{3.5, 4.5}, rootFirstChildId));
+        BasicNode emptyInternalFirstChildCluster = new BasicNode(emptyInternalFirstChildId, emptyInternalCluster, new LinkedList<Node>(), emptyInternalFirstChildInstances, false);
+
+        emptyInternalCluster.addChild(emptyInternalFirstChildCluster);
+
+        LinkedList<Node> groups = new LinkedList<>();
+        groups.add(emptyRootCluster);
+        groups.add(rootFirstChildCluster);
+        groups.add(emptyInternalCluster);
+        groups.add(emptyInternalFirstChildCluster);
+        HashMap<String, Integer> eachClassWithCount = new HashMap<>();
+        eachClassWithCount.put(rootFirstChildId, 3);
+        eachClassWithCount.put(emptyInternalFirstChildId, 1);
+
+        return new BasicHierarchy(emptyRootCluster, groups, eachClassWithCount, 4);
+    }
+
     public static Hierarchy getFourGroupsHierarchy() {
         String rootId = basic_hierarchy.common.Constants.ROOT_ID;
         String rootFirstChildId = getIDOfChildCluster(rootId, 0);
