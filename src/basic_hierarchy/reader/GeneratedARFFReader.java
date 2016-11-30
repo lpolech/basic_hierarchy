@@ -1,12 +1,14 @@
 package basic_hierarchy.reader;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.common.HierarchyFiller;
+import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
@@ -19,8 +21,14 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class GeneratedARFFReader implements DataReader {
 
 	@Override
-	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute,
-						  boolean fillBreathGaps, boolean useSubtree) {
+	public Hierarchy load(
+		String filePath,
+		boolean withInstancesNameAttribute,
+		boolean withClassAttribute,
+		boolean withColumnHeaders,
+		boolean fixBreadthGaps,
+		boolean useSubtree ) throws IOException
+	{
 		File inputFile = new File(filePath);
 		if(!inputFile.exists() && inputFile.isDirectory())
 		{
@@ -141,9 +149,22 @@ public class GeneratedARFFReader implements DataReader {
 			}
 		}
 		
-		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps,
-				useSubtree);
-		return new BasicHierarchy(root, allNodes, eachClassAndItsCount, numberOfInstances);
+		List<? extends Node> allNodes = HierarchyBuilder.buildCompleteGroupHierarchy( root, nodes, fixBreadthGaps, useSubtree );
+
+		if ( root == null ) {
+			// If root was missing from input file, then it must've been created artificially - find it.
+			// List of groups should be sorted by ID, therefore finding root should have negligible overhead.
+			for ( Node group : allNodes ) {
+				if ( group.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
+					root = (BasicNode)group;
+					break;
+				}
+			}
+		}
+
+		// TODO: Implement loading of data column names
+		String[] dataNames = null;
+		return new BasicHierarchy( root, allNodes, dataNames, eachClassAndItsCount, numberOfInstances );
 	}
 
 }
