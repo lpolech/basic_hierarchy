@@ -135,19 +135,50 @@ public class BasicNode implements Node
 	}
 
 	@Override
-	public void printSubtree() {
-        print("", true);
-    }
+	public String toString()
+	{
+		return print( "", true );
+	}
 
-    private void print(String prefix, boolean isTail) {
-        System.out.println(prefix + (isTail ? "L-- " : "|-- ") + id + "(" + instances.size() + ")");
-        for (int i = 0; i < children.size() - 1; i++) {
-            ((BasicNode)children.get(i)).print(prefix + (isTail ? "    " : "|   "), false);
-        }
-        if (children.size() > 0) {
-        	((BasicNode)children.get(children.size() - 1)).print(prefix + (isTail ?"    " : "|   "), true);
-        }
-    }
+	public void printSubtree()
+	{
+		System.out.println( toString() );
+	}
+
+	private String print( String prefix, boolean isTail )
+	{
+		StringBuilder buf = new StringBuilder();
+
+		buf.append( prefix )
+			.append( isTail ? "L-- " : "|-- " )
+			.append( id )
+			.append( '(' )
+			.append( instances.size() )
+			.append( ')' )
+			.append( '\n' );
+
+		String childPrefix = prefix + ( isTail ? "    " : "|   " );
+
+		// Print all children except last
+		for ( int i = 0; i < children.size() - 1; ++i ) {
+			Node n = children.get( i );
+			if ( n instanceof BasicNode ) {
+				buf.append( ( (BasicNode)n ).print( childPrefix, false ) )
+					.append( '\n' );
+			}
+		}
+
+		// Print the last child as tail
+		if ( children.size() > 0 ) {
+			Node n = children.get( children.size() - 1 );
+			if ( n instanceof BasicNode ) {
+				buf.append( ( (BasicNode)n ).print( childPrefix, true ) )
+					.append( '\n' );
+			}
+		}
+
+		return buf.toString();
+	}
 
 	/**
 	 * Recalculates the centroid for this group, and updates this group's representation.
