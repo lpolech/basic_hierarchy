@@ -7,8 +7,8 @@ import java.util.Map;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.StringIdComparator;
-import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
+import basic_hierarchy.interfaces.Node;
 
 
 public class BasicHierarchy implements Hierarchy
@@ -21,8 +21,20 @@ public class BasicHierarchy implements Hierarchy
 	private int instanceCount;
 
 
+	/**
+	 * Creates a new hierarchy object.
+	 * 
+	 * @param root
+	 *            the root node of the hierarchy. Must not be null.
+	 * @param nodes
+	 *            list of all nodes in the hierarchy
+	 * @param dataNames
+	 *            array of names, for data columns in instances
+	 * @param eachClassWithCount
+	 *            map of classes (node identifiers) to the number of children nodes in that class
+	 */
 	public BasicHierarchy(
-		Node root, List<? extends Node> groups,
+		Node root, List<? extends Node> nodes,
 		String[] dataNames,
 		Map<String, Integer> eachClassWithCount )
 	{
@@ -31,10 +43,10 @@ public class BasicHierarchy implements Hierarchy
 		}
 
 		this.root = root;
-		this.groups = groups.toArray( new BasicNode[groups.size()] );
+		this.groups = nodes.toArray( new BasicNode[nodes.size()] );
 		this.dataNames = dataNames;
 
-		for ( Node g : groups ) {
+		for ( Node g : nodes ) {
 			this.instanceCount += g.getNodeInstances().size();
 		}
 
@@ -88,7 +100,7 @@ public class BasicHierarchy implements Hierarchy
 	}
 
 	@Override
-	public int getClassCount( String className, boolean withInstanceInheritance )
+	public int getClassCount( String className, boolean withNodeInheritance )
 	{
 		int index = Arrays.binarySearch( classes, className, new StringIdComparator() );
 
@@ -99,7 +111,7 @@ public class BasicHierarchy implements Hierarchy
 		else {
 			// REFACTOR below code could be faster, by moving the computations into the constructor in a smart way
 			// e.g. by using the partial results (from other classes) to compute results for other classes
-			if ( withInstanceInheritance ) {
+			if ( withNodeInheritance ) {
 				String prefix = className + Constants.HIERARCHY_BRANCH_SEPARATOR;
 				int result = classCounts[index];
 				for ( int i = index; i < classCounts.length; ++i ) {

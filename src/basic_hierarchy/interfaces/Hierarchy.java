@@ -40,10 +40,10 @@ public interface Hierarchy
 	 * 
 	 * @param className
 	 *            Class name to look for.
-	 * @param withInstanceInheritance
-	 *            if true, the result will also include child classes of the specified class. (?)
+	 * @param withNodeInheritance
+	 *            if true, the result will also include child classes of the specified class.
 	 */
-	public int getClassCount( String className, boolean withInstanceInheritance );
+	public int getClassCount( String className, boolean withNodeInheritance );
 
 	public void printTree();
 

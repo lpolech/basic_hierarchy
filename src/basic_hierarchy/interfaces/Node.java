@@ -43,5 +43,53 @@ public interface Node
 	 */
 	public Instance getNodeRepresentation();
 
+	/**
+	 * Sets the parent node of this node.
+	 * 
+	 * @param parent
+	 *            the new parent node
+	 */
+	public void setParent( Node parent );
+
+	/**
+	 * Sets the children nodes of this node.
+	 * 
+	 * @param children
+	 *            list of children nodes
+	 */
+	public void setChildren( LinkedList<Node> children );
+
+	/**
+	 * Adds a child node to this node.
+	 * 
+	 * @param child
+	 *            the node to add
+	 */
+	public void addChild( Node child );
+
+	/**
+	 * Adds a new instance to this node.
+	 * 
+	 * @param instance
+	 *            the instance to add
+	 */
+	public void addInstance( Instance instance );
+
+	/**
+	 * Sets the instance list of this node.
+	 * 
+	 * @param instances
+	 *            list of instances
+	 */
+	public void setInstances( LinkedList<Instance> instances );
+
+	/**
+	 * Sets the representation instance of this node.
+	 * 
+	 * @param representation
+	 *            representation instance
+	 */
+	public void setRepresentation( Instance representation );
+
 	public void printSubtree();
 }
