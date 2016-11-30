@@ -38,6 +38,41 @@ public class BasicHierarchy implements Hierarchy
 		String[] dataNames,
 		Map<String, Integer> eachClassWithCount )
 	{
+		this( root, nodes, dataNames, eachClassWithCount, 0 );
+
+		for ( Node g : nodes ) {
+			this.instanceCount += g.getNodeInstances().size();
+		}
+	}
+
+	public BasicHierarchy(
+		Node root, List<? extends Node> nodes,
+		Map<String, Integer> eachClassWithCount,
+		int instanceCount )
+	{
+		this( root, nodes, null, eachClassWithCount, instanceCount );
+	}
+
+	/**
+	 * Creates a new hierarchy object.
+	 * 
+	 * @param root
+	 *            the root node of the hierarchy. Must not be null.
+	 * @param nodes
+	 *            list of all nodes in the hierarchy
+	 * @param dataNames
+	 *            array of names, for data columns in instances
+	 * @param eachClassWithCount
+	 *            map of classes (node identifiers) to the number of children nodes in that class
+	 * @param instanceCount
+	 *            total number of instances in the hierarchy
+	 */
+	public BasicHierarchy(
+		Node root, List<? extends Node> nodes,
+		String[] dataNames,
+		Map<String, Integer> eachClassWithCount,
+		int instanceCount )
+	{
 		if ( root == null ) {
 			throw new IllegalArgumentException( "Root node must not be null." );
 		}
@@ -45,10 +80,7 @@ public class BasicHierarchy implements Hierarchy
 		this.root = root;
 		this.groups = nodes.toArray( new BasicNode[nodes.size()] );
 		this.dataNames = dataNames;
-
-		for ( Node g : nodes ) {
-			this.instanceCount += g.getNodeInstances().size();
-		}
+		this.instanceCount = instanceCount;
 
 		classes = new String[eachClassWithCount.size()];
 		classCounts = new int[eachClassWithCount.size()];
