@@ -2,114 +2,135 @@ package basic_hierarchy.implementation;
 
 import java.util.LinkedList;
 
-import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
+import basic_hierarchy.interfaces.Instance;
 
-public class BasicNode implements Node {
+
+public class BasicNode implements Node
+{
 	private String id;
 	private Node parent;
 	private LinkedList<Node> children;
 	private LinkedList<Instance> instances;
 	private Instance representation;
-	
-	public void setId(String id)
+
+
+	private BasicNode( String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances )
+	{
+		this.id = id;
+		this.parent = parent;
+		this.children = children;
+		this.instances = instances;
+	}
+
+	public BasicNode( String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances, boolean useSubtree )
+	{
+		this( id, parent, children, instances );
+		recalculateCentroid( useSubtree );
+	}
+
+	public BasicNode( String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances, Instance representation )
+	{
+		this( id, parent, children, instances );
+		this.representation = representation;
+	}
+
+	public BasicNode( String id, Node parent, boolean useSubtree )
+	{
+		this( id, parent, new LinkedList<Node>(), new LinkedList<Instance>(), useSubtree );
+	}
+
+	public BasicNode( String id, Node parent, Instance representation )
+	{
+		this( id, parent, new LinkedList<Node>(), new LinkedList<Instance>(), representation );
+	}
+
+	@Override
+	public void setParent( Node parent )
+	{
+		this.parent = parent;
+	}
+
+	public void setId( String id )
 	{
 		this.id = id;
 	}
 
-	private BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances)
-    {
-        this.id = id;
-        this.parent = parent;
-        this.children = children;
-        this.instances = instances;
-    }
-
-	public BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances,
-                     boolean useSubtree)
+	@Override
+	public void setChildren( LinkedList<Node> children )
 	{
-		this(id, parent, children, instances);
-		recalculateCentroid(useSubtree);
-	}
-
-    public BasicNode(String id, Node parent, LinkedList<Node> children, LinkedList<Instance> instances,
-                     Instance representation)
-    {
-        this(id, parent, children, instances);
-        this.representation = representation;
-    }
-
-	@Override
-	public void setParent(Node parent) {
-		this.parent = parent;
-	}
-
-	@Override
-	public void setChildren(LinkedList<Node> children) {
 		this.children = children;
 	}
 
 	@Override
-	public void addChild(Node child)
+	public void addChild( Node child )
 	{
-		this.children.add(child);
+		this.children.add( child );
 	}
 
 	@Override
-	public void addInstance(Instance instance)
+	public void addInstance( Instance instance )
 	{
-		this.instances.add(instance);
+		this.instances.add( instance );
 	}
 
 	@Override
-	public void setInstances(LinkedList<Instance> instances) {
+	public void setInstances( LinkedList<Instance> instances )
+	{
 		this.instances = instances;
 	}
 
 	@Override
-	public void setRepresentation(Instance representation)
-    {
-        this.representation = representation;
-    }
+	public void setRepresentation( Instance representation )
+	{
+		this.representation = representation;
+	}
 
 	@Override
-	public String getId() {
+	public String getId()
+	{
 		return id;
 	}
 
 	@Override
-	public Node getParent() {
+	public Node getParent()
+	{
 		return parent;
 	}
 
 	@Override
-	public String getParentId() {
+	public String getParentId()
+	{
 		return parent.getId();
 	}
 
 	@Override
-	public LinkedList<Node> getChildren() {
+	public LinkedList<Node> getChildren()
+	{
 		return children;
 	}
 
 	@Override
-	public LinkedList<Instance> getNodeInstances() {
+	public LinkedList<Instance> getNodeInstances()
+	{
 		return instances;
 	}
 
 	@Override
-	public LinkedList<Instance> getSubtreeInstances() {
-		LinkedList<Instance> subtreeInstances = new LinkedList<Instance>(instances);
-		
-		for(Node child: children)
-		{
-			subtreeInstances.addAll(child.getSubtreeInstances());
+	public LinkedList<Instance> getSubtreeInstances()
+	{
+		LinkedList<Instance> result = new LinkedList<Instance>( instances );
+
+		for ( Node child : children ) {
+			result.addAll( child.getSubtreeInstances() );
 		}
-		return subtreeInstances;
+
+		return result;
 	}
 
 	@Override
-	public Instance getNodeRepresentation() {
+	public Instance getNodeRepresentation()
+	{
 		return this.representation;
 	}
 
