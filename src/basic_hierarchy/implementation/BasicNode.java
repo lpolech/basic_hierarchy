@@ -149,27 +149,31 @@ public class BasicNode implements Node
         }
     }
 
-    public Instance recalculateCentroid(boolean useSubtree)
-    {
-        LinkedList<Instance> instances = useSubtree? getSubtreeInstances(): getNodeInstances();
+	/**
+	 * Recalculates the centroid for this group, and updates this group's representation.
+	 * 
+	 * @param useSubtree
+	 *            whether the calculation should also include child groups' instances.
+	 * @return the calculated centroid
+	 */
+	public Instance recalculateCentroid( boolean useSubtree )
+	{
+		LinkedList<Instance> instances = useSubtree ? getSubtreeInstances() : getNodeInstances();
 
-        double[] centroidCoordinates = new double[instances.isEmpty()? 0: instances.getFirst().getData().length];
-        for(Instance inst: instances)
-        {
-            double[] instanceData = inst.getData();
-            for(int i = 0; i < centroidCoordinates.length; i++)
-            {
-                centroidCoordinates[i] += instanceData[i];
-            }
-        }
+		double[] centroidCoordinates = new double[instances.isEmpty() ? 0 : instances.getFirst().getData().length];
+		for ( Instance inst : instances ) {
+			double[] instanceData = inst.getData();
+			for ( int i = 0; i < centroidCoordinates.length; i++ ) {
+				centroidCoordinates[i] += instanceData[i];
+			}
+		}
 
-        for(int i = 0; i < centroidCoordinates.length; i++)
-        {
-            centroidCoordinates[i] /= instances.size();
-        }
+		for ( int i = 0; i < centroidCoordinates.length; i++ ) {
+			centroidCoordinates[i] /= instances.size();
+		}
 
-        Instance oldRepresentation = this.representation;
-        this.representation = new BasicInstance("centroid", "centroid", centroidCoordinates, "centroid");
-        return oldRepresentation;
-    }
+		Instance oldRepresentation = this.representation;
+		this.representation = new BasicInstance( "centroid", "centroid", centroidCoordinates, "centroid" );
+		return oldRepresentation;
+	}
 }
