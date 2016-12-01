@@ -1,50 +1,54 @@
 package basic_hierarchy.interfaces;
 
 /**
- * A hierarchy is a collection of {@link Node}s, all of which share one common ancestor (the root group).
+ * A hierarchy is a collection of {@link Node}s, all of which share one common ancestor (the root node).
  */
 public interface Hierarchy
 {
 	/**
-	 * Returns the root node of this hierarchy.
+	 * @return the root node of this hierarchy.
 	 */
 	public Node getRoot();
 
 	/**
-	 * Returns an array of groups of instances.
+	 * @return array of all groups of instances in this hierarchy.
 	 */
 	public Node[] getGroups();
 
 	/**
-	 * Returns the number of groups in this hierarchy. Equivalent to {@code getGroups().length}.
+	 * @return the number of groups in this hierarchy. Equivalent to {@code getGroups().length}.
 	 */
 	public int getNumberOfGroups();
 
 	/**
-	 * Returns an array of classes present in this hierarchy.
+	 * @return array of classes present in this hierarchy.
 	 */
 	public String[] getClasses();
 
 	/**
-	 * Returns the number of ground-truth classes. Equivalent to {@code getClasses().length}.
+	 * @return the number of ground-truth classes. Equivalent to {@code getClasses().length}.
 	 */
 	public int getNumberOfClasses();
 
 	/**
-	 * Returns the total number of instances in this hierarchy, ie. sum of instances in all groups.
+	 * @return the total number of instances in this hierarchy, ie. sum of instances in all groups.
 	 */
 	public int getNumberOfInstances();
 
 	/**
-	 * Returns the number of groups within the specified class.
+	 * Returns the number of instances that are assigned to {@code className} class within the whole hierarchy.
 	 * 
 	 * @param className
-	 *            Class name to look for.
+	 *            class name to look for.
 	 * @param withNodeInheritance
 	 *            if true, the result will also include child classes of the specified class.
+	 * @return the number of instances that are assigned to the specified class in this hierarchy.
 	 */
 	public int getClassCount( String className, boolean withNodeInheritance );
 
+	/**
+	 * Prints the String representation of this Hierarchy to the console
+	 */
 	public void printTree();
 
 	/**

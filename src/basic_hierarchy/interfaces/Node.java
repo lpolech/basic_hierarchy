@@ -4,42 +4,43 @@ import java.util.LinkedList;
 
 
 /**
- * A group is a collection of {@link Instance}s which belong to the same class.
+ * A {@link Node} is a collection of {@link Instance}s which were assigned to
+ * one {@link Node} by some method or generator.
  */
 public interface Node
 {
 	/**
-	 * @return the id of this group.
+	 * @return the id of this node.
 	 */
 	public String getId();
 
 	/**
-	 * @return the parent group of this group, or null if this is the root group.
+	 * @return the parent node of this node, or null if this is the root node.
 	 */
 	public Node getParent();
 
 	/**
-	 * @return the parent group's id, or null if this is the root group.
+	 * @return the parent node's id, or null if this is the root node.
 	 */
 	public String getParentId();
 
 	/**
-	 * @return the child groups of this group.
+	 * @return list of child nodes of this node.
 	 */
 	public LinkedList<Node> getChildren();
 
 	/**
-	 * Returns instances which belong to this particular group.
+	 * @return list of instances which belong to this particular node.
 	 */
 	public LinkedList<Instance> getNodeInstances();
 
 	/**
-	 * Returns instances which belong to this group or its subgroups.
+	 * @return list of instances which belong to this node or its child nodes.
 	 */
 	public LinkedList<Instance> getSubtreeInstances();
 
 	/**
-	 * Returns a node centroid or medoid.
+	 * @return node representation e.g. its centroid or medoid.
 	 */
 	public Instance getNodeRepresentation();
 
@@ -91,5 +92,8 @@ public interface Node
 	 */
 	public void setRepresentation( Instance representation );
 
+	/**
+	 * Prints the String representation of this Node to the console
+	 */
 	public void printSubtree();
 }
