@@ -149,7 +149,7 @@ public class GeneratedARFFReader implements DataReader {
 			}
 		}
 		
-		List<? extends Node> allNodes = HierarchyBuilder.buildCompleteGroupHierarchy( root, nodes, fixBreadthGaps, useSubtree );
+		List<? extends Node> allNodes = HierarchyBuilder.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
 
 		if ( root == null ) {
 			// If root was missing from input file, then it must've been created artificially - find it.

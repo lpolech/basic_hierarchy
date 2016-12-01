@@ -54,7 +54,7 @@ public class GeneratedCSVReader implements DataReader
 		}
 
 		BasicNode root = null;
-		ArrayList<BasicNode> groups = new ArrayList<BasicNode>();
+		ArrayList<BasicNode> nodes = new ArrayList<BasicNode>();
 		String[] dataNames = null;
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 
@@ -145,47 +145,47 @@ public class GeneratedCSVReader implements DataReader
 				}
 
 				// Assuming that nodes instances are grouped in input file
-				// REFACTOR: could sort groups by ID, and then use binary search to find the group quicker.
-				int groupIndex = -1;
-				for ( int i = 0; i < groups.size() && groupIndex == -1; ++i ) {
-					if ( groups.get( i ).getId().equalsIgnoreCase( lineValues[0] ) ) {
-						groupIndex = i;
+				// REFACTOR: could sort nodes by ID, and then use binary search to find the node quicker.
+				int nodeIndex = -1;
+				for ( int i = 0; i < nodes.size() && nodeIndex == -1; ++i ) {
+					if ( nodes.get( i ).getId().equalsIgnoreCase( lineValues[0] ) ) {
+						nodeIndex = i;
 					}
 				}
 
-				if ( groupIndex == -1 ) {
-					// Group for this id doesn't exist yet. Create it.
-					BasicNode newGroup = new BasicNode( lineValues[0], null, useSubtree );
-					groups.add( newGroup );
+				if ( nodeIndex == -1 ) {
+					// Node for this id doesn't exist yet. Create it.
+					BasicNode newNode = new BasicNode( lineValues[0], null, useSubtree );
+					nodes.add( newNode );
 
-					newGroup.addInstance( new BasicInstance( instanceNameAttr, newGroup.getId(), values, trueClassAttr ) );
+					newNode.addInstance( new BasicInstance( instanceNameAttr, newNode.getId(), values, trueClassAttr ) );
 
 					if ( root == null && lineValues[0].equalsIgnoreCase( Constants.ROOT_ID ) ) {
-						root = newGroup;
+						root = newNode;
 					}
 				}
 				else {
-					groups.get( groupIndex ).addInstance(
-						new BasicInstance( instanceNameAttr, groups.get( groupIndex ).getId(), values, trueClassAttr )
+					nodes.get( nodeIndex ).addInstance(
+						new BasicInstance( instanceNameAttr, nodes.get( nodeIndex ).getId(), values, trueClassAttr )
 					);
 				}
 			}
 		}
 
-		List<? extends Node> allGroups = HierarchyBuilder.buildCompleteGroupHierarchy( root, groups, fixBreadthGaps, useSubtree );
+		List<? extends Node> allNodes = HierarchyBuilder.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
 
 		if ( root == null ) {
 			// If root was missing from input file, then it must've been created artificially - find it.
-			// List of groups should be sorted by ID, therefore finding root should have negligible overhead.
-			for ( Node group : allGroups ) {
-				if ( group.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
-					root = (BasicNode)group;
+			// List of nodes should be sorted by ID, therefore finding root should have negligible overhead.
+			for ( Node node : allNodes ) {
+				if ( node.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
+					root = (BasicNode)node;
 					break;
 				}
 			}
 		}
 
-		return new BasicHierarchy( root, allGroups, dataNames, eachClassAndItsCount );
+		return new BasicHierarchy( root, allNodes, dataNames, eachClassAndItsCount );
 	}
 
 	private static int boolToInt( boolean b )
