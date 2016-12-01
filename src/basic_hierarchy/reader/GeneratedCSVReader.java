@@ -24,6 +24,7 @@ public class GeneratedCSVReader implements DataReader
 {
 	/**
 	 * This method assumes that data are generated using Michał Spytkowski's data generator, using TSSB method.
+	 * For more information about the generator, see https://arxiv.org/abs/1606.05681
 	 * <p>
 	 * The first node listed is always the root node. It is also the only node without a parent.
 	 * Nodes are given in depth-first order.
