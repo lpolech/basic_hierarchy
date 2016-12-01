@@ -119,13 +119,13 @@ public class BasicNode implements Node
 	@Override
 	public LinkedList<Instance> getSubtreeInstances()
 	{
-		LinkedList<Instance> result = new LinkedList<Instance>( instances );
+		LinkedList<Instance> subtreeInstances = new LinkedList<Instance>( instances );
 
 		for ( Node child : children ) {
-			result.addAll( child.getSubtreeInstances() );
+			subtreeInstances.addAll( child.getSubtreeInstances() );
 		}
 
-		return result;
+		return subtreeInstances;
 	}
 
 	@Override
