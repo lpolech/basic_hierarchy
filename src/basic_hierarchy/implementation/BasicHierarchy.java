@@ -1,6 +1,7 @@
 package basic_hierarchy.implementation;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class BasicHierarchy implements Hierarchy
 		classCounts = new int[eachClassWithCount.size()];
 
 		LinkedList<String> sortedKeys = new LinkedList<String>( eachClassWithCount.keySet() );
-		sortedKeys.sort( new StringIdComparator() );
+		Collections.sort( sortedKeys, new StringIdComparator() );
 
 		for ( int index = 0; index < sortedKeys.size(); ++index ) {
 			String key = sortedKeys.get( index );

@@ -2,6 +2,7 @@ package basic_hierarchy.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class HierarchyBuilder
 			n.recalculateCentroid( useSubtree );
 		}
 
-		nodes.sort( new NodeIdComparator() );
+		Collections.sort( nodes, new NodeIdComparator() );
 
 		return nodes;
 	}
@@ -262,7 +263,7 @@ public class HierarchyBuilder
 			for ( Node n : newChildren ) {
 				current.addChild( n );
 			}
-			children.sort( nodeComparator );
+			Collections.sort( children, nodeComparator );
 		}
 
 		List<BasicNode> allNodes = new ArrayList<BasicNode>( artificialNodes );
