@@ -11,16 +11,16 @@ public class BasicInstance implements Instance
 	private String trueClass;
 
 
-	public BasicInstance( String instanceName, String assignedClass, double[] data )
+	public BasicInstance( String instanceName, String nodeId, double[] data )
 	{
 		this.instanceName = instanceName;
-		this.nodeId = assignedClass;
+		this.nodeId = nodeId;
 		this.data = data;
 	}
 
-	public BasicInstance( String instanceName, String assignedClass, double[] data, String trueClass )
+	public BasicInstance( String instanceName, String nodeId, double[] data, String trueClass )
 	{
-		this( instanceName, assignedClass, data );
+		this( instanceName, nodeId, data );
 		this.trueClass = trueClass;
 	}
 
