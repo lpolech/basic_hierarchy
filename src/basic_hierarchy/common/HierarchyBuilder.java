@@ -114,14 +114,12 @@ public class HierarchyBuilder
 	 * @param nodes
 	 *            the original collection of nodes
 	 * @param useSubtree
-	 *            whether the cntroid calculation should also include child nodes' instances.
+	 *            whether the centroid calculation should also include child nodes' instances
 	 * @return the complete 'fixed' collection of nodes, filled with artificial nodes
 	 */
 	private static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
 	{
 		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
-
-		StringBuilder buf = new StringBuilder();
 
 		for ( int i = 0; i < nodes.size(); ++i ) {
 			BasicNode node = nodes.get( i );
@@ -134,52 +132,24 @@ public class HierarchyBuilder
 			if ( node.getParent() == null ) {
 				String[] nodeBranchIds = getNodeIdSegments( node );
 
-				BasicNode nearestParent = null;
-				int nearestParentHeight = -1;
+				BasicNode nearestAncestor = null;
+				int candidateHeight = -1;
 
 				// Try to find nearest parent in 'real' nodes
 				BasicNode candidate = findNearestAncestor( nodes, nodeBranchIds, -1, i );
 				if ( candidate != null ) {
-					nearestParent = candidate;
-					nearestParentHeight = getNodeIdSegments( candidate ).length;
+					nearestAncestor = candidate;
+					candidateHeight = getNodeIdSegments( candidate ).length;
 				}
 
 				// Try to find nearest parent in artificial nodes
-				candidate = findNearestAncestor( nodes, nodeBranchIds, nearestParentHeight );
+				candidate = findNearestAncestor( artificialNodes, nodeBranchIds, candidateHeight );
 				if ( candidate != null ) {
-					nearestParent = candidate;
-					nearestParentHeight = getNodeIdSegments( candidate ).length;
+					nearestAncestor = candidate;
 				}
 
-				if ( nearestParent != null ) {
-					BasicNode newParent = nearestParent;
-
-					for ( int j = nearestParentHeight; j < nodeBranchIds.length - 1; ++j ) {
-						buf.setLength( 0 );
-
-						String newId = buf
-							.append( newParent.getId() )
-							.append( Constants.HIERARCHY_BRANCH_SEPARATOR )
-							.append( nodeBranchIds[j] )
-							.toString();
-
-						// Add an empty node
-						BasicNode newNode = new BasicNode(
-							newId, newParent, useSubtree
-						);
-
-						// Create proper parent-child relations
-						newParent.addChild( newNode );
-						newNode.setParent( newParent );
-
-						artificialNodes.add( newNode );
-
-						newParent = newNode;
-					}
-
-					// Add missing links
-					newParent.addChild( node );
-					node.setParent( newParent );
+				if ( nearestAncestor != null ) {
+					artificialNodes.addAll( fixDepthGapsBetween( nearestAncestor, node, useSubtree ) );
 				}
 				else {
 					throw new RuntimeException(
@@ -196,6 +166,49 @@ public class HierarchyBuilder
 		allNodes.addAll( nodes );
 
 		return allNodes;
+	}
+
+	/**
+	 * Fixes depth gaps between the specified ancestor and descendant nodes only.
+	 * 
+	 * @param ancestor
+	 *            the nearest ancestor node that already exists within the hierarchy
+	 * @param descendant
+	 *            the descendant node we want to create parents for
+	 * @param useSubtree
+	 *            whether the centroid calculation should also include child nodes' instances
+	 * @return collection of artificial nodes created as a result of this method
+	 */
+	private static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
+	{
+		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
+
+		String[] descendantBranchIds = getNodeIdSegments( descendant );
+		int ancestorHeight = getNodeIdSegments( ancestor ).length;
+
+		BasicNode newParent = ancestor;
+		for ( int j = ancestorHeight; j < descendantBranchIds.length - 1; ++j ) {
+			String newId = newParent.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + descendantBranchIds[j];
+
+			// Add an empty node
+			BasicNode newNode = new BasicNode(
+				newId, newParent, useSubtree
+			);
+
+			// Create proper parent-child relations
+			newParent.addChild( newNode );
+			newNode.setParent( newParent );
+
+			artificialNodes.add( newNode );
+
+			newParent = newNode;
+		}
+
+		// Add missing links
+		newParent.addChild( descendant );
+		descendant.setParent( newParent );
+
+		return artificialNodes;
 	}
 
 	/**
