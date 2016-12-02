@@ -163,8 +163,7 @@ public class BasicNode implements Node
 		for ( int i = 0; i < children.size() - 1; ++i ) {
 			Node n = children.get( i );
 			if ( n instanceof BasicNode ) {
-				buf.append( ( (BasicNode)n ).print( childPrefix, false ) )
-					.append( '\n' );
+				buf.append( ( (BasicNode)n ).print( childPrefix, false ) );
 			}
 		}
 
@@ -172,8 +171,7 @@ public class BasicNode implements Node
 		if ( children.size() > 0 ) {
 			Node n = children.get( children.size() - 1 );
 			if ( n instanceof BasicNode ) {
-				buf.append( ( (BasicNode)n ).print( childPrefix, true ) )
-					.append( '\n' );
+				buf.append( ( (BasicNode)n ).print( childPrefix, true ) );
 			}
 		}
 
