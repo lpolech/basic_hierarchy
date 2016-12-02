@@ -3,7 +3,6 @@ package basic_hierarchy.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -211,74 +210,88 @@ public class HierarchyBuilder
 	 * @param nodes
 	 *            the original collection of nodes
 	 * @param useSubtree
-	 *            whether the cntroid calculation should also include child nodes' instances.
+	 *            whether the centroid calculation should also include child nodes' instances
 	 * @return the complete 'fixed' collection of nodes, filled with artificial nodes
 	 */
 	private static List<BasicNode> fixBreadthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
 	{
-		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
+		List<BasicNode> artificialNodes = new ArrayList<>();
 
-		Comparator<Node> nodeComparator = new NodeIdComparator();
-		StringBuilder buf = new StringBuilder();
-
-		Queue<BasicNode> pendingNodes = new LinkedList<BasicNode>();
+		Queue<BasicNode> pendingNodes = new LinkedList<>();
 		pendingNodes.add( root );
 
 		while ( !pendingNodes.isEmpty() ) {
 			BasicNode current = pendingNodes.remove();
 
-			LinkedList<Node> children = current.getChildren();
-
-			// Make sure children are sorted so that we can detect gaps.
-			Collections.sort( children, nodeComparator );
-
-			for ( int i = 0; i < children.size(); ++i ) {
-				Node child = children.get( i );
-
-				String[] ids = getNodeIdSegments( child );
-				if ( ids[ids.length - 1].equals( Integer.toString( i ) ) ) {
-					// All is well, enqueue the node for further processing
-
-					if ( areNodesAncestorAndDescendant( current, child ) ) {
-						pendingNodes.add( (BasicNode)child );
-					}
-					else {
-						throw new RuntimeException(
-							String.format(
-								"Fatal error while filling breadth gaps! '%s' IS NOT an ancestor of '%s', " +
-									"but '%s' IS a child of '%s'!",
-								current.getId(), child.getId(), child.getId(), current.getId()
-							)
-						);
-					}
-				}
-				else {
-					// i-th node's id isn't equal to i - there's a gap. Fix it.
-					buf.setLength( 0 );
-					buf.append( current.getId() ).append( Constants.HIERARCHY_BRANCH_SEPARATOR ).append( i );
-
-					BasicNode newNode = new BasicNode( buf.toString(), current, useSubtree );
-					newNode.setParent( current );
-
-					// Insert the new node at the current index.
-					// Don't enqueue the new node, since it has no children anyway
-					// During the next iteration of the loop, we will process the same node again,
-					// so that further gaps will be detected
-					children.add( i, newNode );
-					artificialNodes.add( newNode );
-				}
+			// Enqueue child nodes for processing ahead of time, so that we don't
+			// have to differentiate between real and artificial nodes later.
+			for ( Node child : current.getChildren() ) {
+				pendingNodes.add( (BasicNode)child );
 			}
 
-			// Children were inserted at correct indices, no need to sort again.
-			// Set the list of children of the current node, in case implementation of getChildren()
-			// is changed to return a copy, and not the collection itself.
-			current.setChildren( children );
+			artificialNodes.addAll( fixBreadthGapsInNode( current, useSubtree ) );
 		}
 
-		List<BasicNode> allNodes = new ArrayList<BasicNode>( artificialNodes );
+		List<BasicNode> allNodes = new ArrayList<>( artificialNodes );
 		allNodes.addAll( nodes );
 
 		return allNodes;
+	}
+
+	/**
+	 * Fixes gaps in breadth just in the specified node.
+	 * 
+	 * @param node
+	 *            the node to fix breadth gaps in
+	 * @param useSubtree
+	 *            whether the centroid calculation should also include child nodes' instances
+	 * @return collection of artificial nodes created as a result of this method
+	 */
+	private static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
+	{
+		LinkedList<Node> children = node.getChildren();
+		List<BasicNode> artificialNodes = new ArrayList<>();
+
+		// Make sure children are sorted so that we can detect gaps.
+		Collections.sort( children, new NodeIdComparator() );
+
+		for ( int i = 0; i < children.size(); ++i ) {
+			Node child = children.get( i );
+
+			String[] ids = getNodeIdSegments( child );
+			if ( ids[ids.length - 1].equals( Integer.toString( i ) ) ) {
+				// Assert that the existing nodes have correct relationships.
+				if ( !areNodesAncestorAndDescendant( node, child ) ) {
+					throw new RuntimeException(
+						String.format(
+							"Fatal error while filling breadth gaps! '%s' IS NOT an ancestor of '%s', " +
+								"but '%s' IS a child of '%s'!",
+							node.getId(), child.getId(), child.getId(), node.getId()
+						)
+					);
+				}
+			}
+			else {
+				// i-th node's id isn't equal to i - there's a gap. Fix it.
+				String newId = node.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + i;
+				BasicNode newNode = new BasicNode( newId, node, useSubtree );
+				newNode.setParent( node );
+
+				// Insert the new node at the current index.
+				// Don't enqueue the new node, since it has no children anyway
+				// During the next iteration of the loop, we will process the same node again,
+				// so that further gaps will be detected
+				children.add( i, newNode );
+				artificialNodes.add( newNode );
+			}
+		}
+
+		// Children were inserted at correct indices, no need to sort again.
+		// Set the list of children of the current node, in case implementation of getChildren()
+		// is changed to return a copy, and not the collection itself.
+		node.setChildren( children );
+
+		return artificialNodes;
 	}
 
 	/**
