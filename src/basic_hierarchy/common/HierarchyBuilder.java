@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Queue;
 
 import basic_hierarchy.implementation.BasicNode;
-import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.interfaces.Hierarchy;
+import basic_hierarchy.interfaces.Node;
 
 
 /**
@@ -227,24 +227,18 @@ public class HierarchyBuilder
 		while ( !pendingNodes.isEmpty() ) {
 			BasicNode current = pendingNodes.remove();
 
-			List<Node> children = current.getChildren();
-			List<Node> newChildren = new LinkedList<Node>();
+			LinkedList<Node> children = current.getChildren();
+
+			// Make sure children are sorted so that we can detect gaps.
+			Collections.sort( children, nodeComparator );
 
 			for ( int i = 0; i < children.size(); ++i ) {
 				Node child = children.get( i );
 
-				if ( child == null ) {
-					// If i-th child doesn't exist, then there's a gap. Fix it.
-					buf.setLength( 0 );
-					buf.append( current.getId() ).append( Constants.HIERARCHY_BRANCH_SEPARATOR ).append( i );
+				String[] ids = getNodeBranchIds( child );
+				if ( ids[ids.length - 1].equals( Integer.toString( i ) ) ) {
+					// All is well, enqueue the node for further processing
 
-					BasicNode newNode = new BasicNode( buf.toString(), current, useSubtree );
-					newNode.setParent( current );
-
-					newChildren.add( newNode );
-					artificialNodes.add( newNode );
-				}
-				else {
 					if ( areNodesRelated( current, child ) ) {
 						pendingNodes.add( (BasicNode)child );
 					}
@@ -258,12 +252,27 @@ public class HierarchyBuilder
 						);
 					}
 				}
+				else {
+					// i-th node's id isn't equal to i - there's a gap. Fix it.
+					buf.setLength( 0 );
+					buf.append( current.getId() ).append( Constants.HIERARCHY_BRANCH_SEPARATOR ).append( i );
+
+					BasicNode newNode = new BasicNode( buf.toString(), current, useSubtree );
+					newNode.setParent( current );
+
+					// Insert the new node at the current index.
+					// Don't enqueue the new node, since it has no children anyway
+					// During the next iteration of the loop, we will process the same node again,
+					// so that further gaps will be detected
+					children.add( i, newNode );
+					artificialNodes.add( newNode );
+				}
 			}
 
-			for ( Node n : newChildren ) {
-				current.addChild( n );
-			}
-			Collections.sort( children, nodeComparator );
+			// Children were inserted at correct indices, no need to sort again.
+			// Set the list of children of the current node, in case implementation of getChildren()
+			// is changed to return a copy, and not the collection itself.
+			current.setChildren( children );
 		}
 
 		List<BasicNode> allNodes = new ArrayList<BasicNode>( artificialNodes );
