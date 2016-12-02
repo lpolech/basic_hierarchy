@@ -125,7 +125,7 @@ public class HierarchyBuilder
 	 *            whether the centroid calculation should also include child nodes' instances
 	 * @return collection of artificial nodes created as a result of this method
 	 */
-	private static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
+	public static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
 	{
 		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
@@ -184,7 +184,7 @@ public class HierarchyBuilder
 	 *            whether the centroid calculation should also include child nodes' instances
 	 * @return collection of artificial nodes created as a result of this method
 	 */
-	private static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
+	public static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
 	{
 		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
@@ -229,7 +229,7 @@ public class HierarchyBuilder
 	 *            whether the centroid calculation should also include child nodes' instances
 	 * @return collection of artificial nodes created as a result of this method
 	 */
-	private static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
+	public static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
 	{
 		List<BasicNode> artificialNodes = new ArrayList<>();
 
@@ -260,7 +260,7 @@ public class HierarchyBuilder
 	 *            whether the centroid calculation should also include child nodes' instances
 	 * @return collection of artificial nodes created as a result of this method
 	 */
-	private static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
+	public static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
 	{
 		LinkedList<Node> children = node.getChildren();
 		List<BasicNode> artificialNodes = new ArrayList<>();
