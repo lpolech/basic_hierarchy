@@ -84,7 +84,7 @@ public class HierarchyBuilder
 	{
 		for ( int i = 0; i < nodes.size(); ++i ) {
 			BasicNode parent = nodes.get( i );
-			String[] parentBranchIds = getNodeBranchIds( parent );
+			String[] parentBranchIds = getNodeIdSegments( parent );
 
 			for ( int j = 0; j < nodes.size(); ++j ) {
 				if ( i == j ) {
@@ -93,9 +93,9 @@ public class HierarchyBuilder
 				}
 
 				BasicNode child = nodes.get( j );
-				String[] childBranchIds = getNodeBranchIds( child );
+				String[] childBranchIds = getNodeIdSegments( child );
 
-				if ( areNodesDirectlyRelated( parentBranchIds, childBranchIds ) ) {
+				if ( areIdsParentAndChild( parentBranchIds, childBranchIds ) ) {
 					child.setParent( parent );
 					parent.addChild( child );
 				}
@@ -133,7 +133,7 @@ public class HierarchyBuilder
 			}
 
 			if ( node.getParent() == null ) {
-				String[] nodeBranchIds = getNodeBranchIds( node );
+				String[] nodeBranchIds = getNodeIdSegments( node );
 
 				BasicNode nearestParent = null;
 				int nearestParentHeight = -1;
@@ -142,14 +142,14 @@ public class HierarchyBuilder
 				BasicNode candidate = findNearestAncestor( nodes, nodeBranchIds, -1, i );
 				if ( candidate != null ) {
 					nearestParent = candidate;
-					nearestParentHeight = getNodeBranchIds( candidate ).length;
+					nearestParentHeight = getNodeIdSegments( candidate ).length;
 				}
 
 				// Try to find nearest parent in artificial nodes
 				candidate = findNearestAncestor( nodes, nodeBranchIds, nearestParentHeight );
 				if ( candidate != null ) {
 					nearestParent = candidate;
-					nearestParentHeight = getNodeBranchIds( candidate ).length;
+					nearestParentHeight = getNodeIdSegments( candidate ).length;
 				}
 
 				if ( nearestParent != null ) {
@@ -235,11 +235,11 @@ public class HierarchyBuilder
 			for ( int i = 0; i < children.size(); ++i ) {
 				Node child = children.get( i );
 
-				String[] ids = getNodeBranchIds( child );
+				String[] ids = getNodeIdSegments( child );
 				if ( ids[ids.length - 1].equals( Integer.toString( i ) ) ) {
 					// All is well, enqueue the node for further processing
 
-					if ( areNodesRelated( current, child ) ) {
+					if ( areNodesAncestorAndDescendant( current, child ) ) {
 						pendingNodes.add( (BasicNode)child );
 					}
 					else {
@@ -316,10 +316,10 @@ public class HierarchyBuilder
 
 		for ( int i = 0; i < maxIndex; ++i ) {
 			BasicNode parent = nodes.get( i );
-			String[] parentBranchIds = getNodeBranchIds( parent );
+			String[] parentBranchIds = getNodeIdSegments( parent );
 
 			if ( parentBranchIds.length > nearestHeight ) {
-				if ( areNodesRelated( parentBranchIds, childBranchIds ) ) {
+				if ( areIdsAncestorAndDescendant( parentBranchIds, childBranchIds ) ) {
 					result = parent;
 					nearestHeight = parentBranchIds.length;
 				}
@@ -332,67 +332,68 @@ public class HierarchyBuilder
 	/**
 	 * Convenience method to split a node's IDs into segments for easier processing.
 	 */
-	private static String[] getNodeBranchIds( Node g )
+	private static String[] getNodeIdSegments( Node n )
 	{
-		String[] result = g.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
+		String[] result = n.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
 		// Ignore the first index ('gen')
 		return Arrays.copyOfRange( result, 1, result.length );
 	}
 
 	/**
-	 * {@link #areNodesDirectlyRelated(String[], String[])}
+	 * {@link #areIdsParentAndChild(String[], String[])}
 	 */
-	private static boolean areNodesDirectlyRelated( Node parent, Node child )
+	private static boolean areNodesParentAndChild( Node parent, Node child )
 	{
-		return areNodesDirectlyRelated( getNodeBranchIds( parent ), getNodeBranchIds( child ) );
+		return areIdsParentAndChild(
+			getNodeIdSegments( parent ),
+			getNodeIdSegments( child )
+		);
 	}
 
 	/**
-	 * Checks whether the two nodes are directly related (parent-child).
-	 * This method returns false if both ids point to the same node.
+	 * {@link #areIdsAncestorAndDescendant(String[], String[])}
+	 */
+	private static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
+	{
+		return areIdsAncestorAndDescendant(
+			getNodeIdSegments( ancestor ),
+			getNodeIdSegments( descendant )
+		);
+	}
+
+	/**
+	 * Checks whether the two IDs represent nodes that are directly related (parent-child).
+	 * This method returns false if both IDs point to the same node.
 	 * 
 	 * @param parentIds
 	 *            ID segments of the node acting as parent
 	 * @param childIds
-	 *            ID segments of the node as child
-	 * @return whether the two nodes are in fact in a direct parent-child relationship.
+	 *            ID segments of the node acting as child
+	 * @return whether the two nodes are in a direct parent-child relationship.
 	 */
-	private static boolean areNodesDirectlyRelated( String[] parentIds, String[] childIds )
+	private static boolean areIdsParentAndChild( String[] parentIds, String[] childIds )
 	{
-		// Check that the child is exactly one level 'deeper' than the parent.
-
-		if ( parentIds.length + 1 == childIds.length ) {
-			// Compare the node IDs to verify that they are related.
-			return areNodesRelated( parentIds, childIds );
-		}
-		else {
-			return false;
-		}
+		// Check that the child is exactly one level 'deeper' than the parent, and then
+		// compare the node IDs to verify that they are related.
+		return ( parentIds.length + 1 == childIds.length ) &&
+			areIdsAncestorAndDescendant( parentIds, childIds );
 	}
 
 	/**
-	 * {@link #areNodesRelated(String[], String[])}
-	 */
-	private static boolean areNodesRelated( Node parent, Node child )
-	{
-		return areNodesRelated( getNodeBranchIds( parent ), getNodeBranchIds( child ) );
-	}
-
-	/**
-	 * Checks whether the two nodes are indirectly related (ancestor-descendant).
-	 * This method returns false if both ids point to the same node.
+	 * Checks whether the two IDs represent nodes that are indirectly related (ancestor-descendant).
+	 * This method returns false if both IDs point to the same node.
 	 * 
-	 * @param parentIds
-	 *            ID segments of the node acting as parent
-	 * @param childIds
-	 *            ID segments of the node as child
-	 * @return whether the two nodes are in fact in a ancestor-descendant relationship.
+	 * @param ancestorIds
+	 *            ID segments of the node acting as ancestor
+	 * @param descendantIds
+	 *            ID segments of the node acting as descendant
+	 * @return whether the two nodes are in a ancestor-descendant relationship.
 	 */
-	private static boolean areNodesRelated( String[] parentIds, String[] childIds )
+	private static boolean areIdsAncestorAndDescendant( String[] ancestorIds, String[] descendantIds )
 	{
-		if ( parentIds.length < childIds.length ) {
-			for ( int i = 0; i < parentIds.length; ++i ) {
-				if ( !parentIds[i].equals( childIds[i] ) ) {
+		if ( ancestorIds.length < descendantIds.length ) {
+			for ( int i = 0; i < ancestorIds.length; ++i ) {
+				if ( !ancestorIds[i].equals( descendantIds[i] ) ) {
 					return false;
 				}
 			}
@@ -400,6 +401,8 @@ public class HierarchyBuilder
 			return true;
 		}
 		else {
+			// 'ancestor' ID has more segments than 'descendant', which means there's no way
+			// it can be an ancestor to the other node.
 			return false;
 		}
 	}
