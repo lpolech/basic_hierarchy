@@ -49,10 +49,11 @@ public class HierarchyBuilder
 		}
 
 		buildHierarchy( nodes );
-		nodes = fixDepthGaps( root, nodes, useSubtree );
+
+		nodes.addAll( fixDepthGaps( root, nodes, useSubtree ) );
 
 		if ( fixBreadthGaps ) {
-			nodes = fixBreadthGaps( root, nodes, useSubtree );
+			nodes.addAll( fixBreadthGaps( root, useSubtree ) );
 		}
 
 		for ( BasicNode n : nodes ) {
@@ -72,8 +73,8 @@ public class HierarchyBuilder
 	 * </p>
 	 * <p>
 	 * This means that this method DOES NOT GUARANTEE that the hierarchy it creates will be contiguous.
-	 * To fix this, follow-up this method with {@link #fixDepthGaps(BasicNode, List)} and/or
-	 * {@link #fixBreadthGaps(BasicNode, List)}
+	 * To fix this, follow-up this method with {@link #fixDepthGaps(BasicNode, List, boolean)} and/or
+	 * {@link #fixBreadthGaps(BasicNode, boolean)}
 	 * </p>
 	 * 
 	 * @param nodes
@@ -115,7 +116,7 @@ public class HierarchyBuilder
 	 *            the original collection of nodes
 	 * @param useSubtree
 	 *            whether the centroid calculation should also include child nodes' instances
-	 * @return the complete 'fixed' collection of nodes, filled with artificial nodes
+	 * @return collection of artificial nodes created as a result of this method
 	 */
 	private static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
 	{
@@ -162,10 +163,7 @@ public class HierarchyBuilder
 			}
 		}
 
-		List<BasicNode> allNodes = new ArrayList<BasicNode>( artificialNodes );
-		allNodes.addAll( nodes );
-
-		return allNodes;
+		return artificialNodes;
 	}
 
 	/**
@@ -220,13 +218,11 @@ public class HierarchyBuilder
 	 * 
 	 * @param root
 	 *            the root node
-	 * @param nodes
-	 *            the original collection of nodes
 	 * @param useSubtree
 	 *            whether the centroid calculation should also include child nodes' instances
-	 * @return the complete 'fixed' collection of nodes, filled with artificial nodes
+	 * @return collection of artificial nodes created as a result of this method
 	 */
-	private static List<BasicNode> fixBreadthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
+	private static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
 	{
 		List<BasicNode> artificialNodes = new ArrayList<>();
 
@@ -245,10 +241,7 @@ public class HierarchyBuilder
 			artificialNodes.addAll( fixBreadthGapsInNode( current, useSubtree ) );
 		}
 
-		List<BasicNode> allNodes = new ArrayList<>( artificialNodes );
-		allNodes.addAll( nodes );
-
-		return allNodes;
+		return artificialNodes;
 	}
 
 	/**
