@@ -48,7 +48,7 @@ public class HierarchyBuilder
 			nodes.add( 0, root );
 		}
 
-		buildHierarchy( nodes );
+		createParentChildRelations( nodes );
 
 		nodes.addAll( fixDepthGaps( root, nodes, useSubtree ) );
 
@@ -66,7 +66,8 @@ public class HierarchyBuilder
 	}
 
 	/**
-	 * Builds a hierarchy of nodes, based solely on the nodes present in the specified collection.
+	 * Updates all nodes in the specified collection so that their actual parent-child relations match
+	 * up with their IDs.
 	 * <p>
 	 * If a node's ID implies it has a parent, but that parent is not present in the collection, then
 	 * that node will not have its parent set.
@@ -80,8 +81,14 @@ public class HierarchyBuilder
 	 * @param nodes
 	 *            collection of all nodes to build the hierarchy from
 	 */
-	private static void buildHierarchy( List<BasicNode> nodes )
+	private static void createParentChildRelations( List<BasicNode> nodes )
 	{
+		// Reset all previous relations first
+		for ( BasicNode node : nodes ) {
+			node.setChildren( new LinkedList<Node>() );
+			node.setParent( null );
+		}
+
 		for ( int i = 0; i < nodes.size(); ++i ) {
 			BasicNode parent = nodes.get( i );
 			String[] parentBranchIds = getNodeIdSegments( parent );
