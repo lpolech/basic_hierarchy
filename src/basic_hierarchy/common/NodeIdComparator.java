@@ -6,9 +6,9 @@ import basic_hierarchy.interfaces.Node;
 
 
 /**
- * Compares two groups.
+ * Compares two nodes.
  * <p>
- * Implementation compares the two groups' IDs using {@linkplain StringIdComparator}.
+ * Implementation compares the two nodes' IDs using {@linkplain StringIdComparator}.
  * </p>
  */
 public class NodeIdComparator implements Comparator<Node>
