@@ -8,22 +8,22 @@ import java.util.LinkedList;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.StringIdComparator;
 import basic_hierarchy.interfaces.Hierarchy;
+import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
+import basic_hierarchy.test.TestCommon;
 
 public class BasicHierarchy implements Hierarchy {
 	private Node root;
 	private BasicNode[] groups;
 	private String[] classes;
-	private int[] classesCount;
-	private int numberOfInstances;
+    private int[] classesCount;
+	private int overallNumberOfInstances;
 	
 	public BasicHierarchy(Node root, LinkedList<Node> groups, HashMap<String, Integer> eachClassWithCount,
-			int numberOfInstances)
+			int overallNumberOfInstances)
 	{
-		this.root = root;
-		this.groups = groups.toArray(new BasicNode[groups.size()]);
-		this.numberOfInstances = numberOfInstances;
-		
+        this(root, groups, overallNumberOfInstances);
+
 		classes = new String[eachClassWithCount.size()];
 		classesCount = new int[eachClassWithCount.size()];
 		LinkedList<String> sortedKeyes = new LinkedList<String>(eachClassWithCount.keySet());
@@ -36,6 +36,19 @@ public class BasicHierarchy implements Hierarchy {
 			arrayIndex++;
 		}
 	}
+
+    public BasicHierarchy(Node root, LinkedList<Node> groups, String[] classes, int[] classesCount, int overallNumberOfInstances)
+    {
+        this(root, groups, overallNumberOfInstances);
+        this.classes = classes;
+        this.classesCount = classesCount;
+    }
+
+    private BasicHierarchy(Node root, LinkedList<Node> groups, int overallNumberOfInstances) {
+        this.root = root;
+        this.groups = groups.toArray(new BasicNode[groups.size()]);
+        this.overallNumberOfInstances = overallNumberOfInstances;
+    }
 	
 	@Override
 	public Node getRoot() {
@@ -62,8 +75,13 @@ public class BasicHierarchy implements Hierarchy {
 		return classes;
 	}
 
+    @Override
+	public int[] getClassesCount() {
+        return classesCount;
+    }
+
 	@Override
-	public int getClassCount(String className, boolean withInstancesInheritance) {
+	public int getParticularClassCount(String className, boolean withInstancesInheritance) {
 		int index = Arrays.binarySearch(classes, className, new StringIdComparator());
 		if(index < 0)
 			return index;
@@ -88,14 +106,38 @@ public class BasicHierarchy implements Hierarchy {
 		}
 	}
 
-	@Override
-	public int getNumberOfInstances() {
-		return numberOfInstances;
+	public int getOverallNumberOfInstances() {
+		return overallNumberOfInstances;
 	}
 
 	@Override
 	public void printTree() {
 		if(root != null)
-			root.printSubtree();		
+			root.printSubtree();
+	}
+
+	@Override
+	public Hierarchy getFlatClusteringWithCommonEmptyRoot() {
+		Node artificialRoot = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), new LinkedList<Instance>(), false);
+
+		LinkedList<Node> groups = new LinkedList<>();
+		groups.add(artificialRoot);
+		int nodesCounter = 0;
+		for(Node n: this.getGroups()) {
+		    if(!n.getNodeInstances().isEmpty()) {
+                Node nodeToAdd = new BasicNode(TestCommon.getIDOfChildCluster(Constants.ROOT_ID, nodesCounter++),
+                        artificialRoot, new LinkedList<Node>(), new LinkedList<Instance>(), false);
+
+                for (Instance inst : n.getNodeInstances()) {
+                    nodeToAdd.addInstance(new BasicInstance(inst.getInstanceName(), nodeToAdd.getId(),
+                            inst.getData().clone(), inst.getTrueClass()));
+                }
+
+                groups.add(nodeToAdd);
+                artificialRoot.addChild(nodeToAdd);
+            }
+        }
+
+		return new BasicHierarchy(artificialRoot, groups, this.classes, this.classesCount, this.overallNumberOfInstances);
 	}
 }

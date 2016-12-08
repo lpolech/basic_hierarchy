@@ -6,7 +6,10 @@ public interface Hierarchy {
 	public int getNumberOfGroups();
 	public String[] getClasses();
 	public int getNumberOfClasses();
-	public int getClassCount(String className, boolean withClassHierarchy);
-	public int getNumberOfInstances();
-	public void printTree();
+    public int[] getClassesCount();
+    public int getParticularClassCount(String className, boolean withClassHierarchy);
+	public int getOverallNumberOfInstances();
+	public void printTree();//@FIXME this could be a default implementation in java 8
+    public Hierarchy getFlatClusteringWithCommonEmptyRoot(); //@FIXME we can make it a static method with default
+    //implementation but only in java 8
 }

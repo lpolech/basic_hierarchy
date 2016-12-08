@@ -43,7 +43,7 @@ public class GeneratedCSVReader implements DataReader {
 		BasicNode root = null;
 		ArrayList<BasicNode> nodes = new ArrayList<BasicNode>();
 		int rootIndexInNodes = -1;
-		int numberOfInstances = 0;		
+		int oveallNumberOfInstances = 0;
 		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
 		try(Scanner scanner = new Scanner(inputFile))
 		{
@@ -124,13 +124,13 @@ public class GeneratedCSVReader implements DataReader {
 				{
 					//nodes.get(nodes.size()-1).addInstance(new BasicInstance(nodes.get(nodes.size()-1).getId(), values, classAttrib));
 					nodes.get(nodeIndex).addInstance(new BasicInstance(instanceNameAttrib, nodes.get(nodeIndex).getId(), values, classAttrib));
-					numberOfInstances++;
+					oveallNumberOfInstances++;
 				}
 				else
 				{
 					BasicNode nodeToAdd = new BasicNode(lineValues[0], null, new LinkedList<Node>(), new LinkedList<Instance>(), useSubtree);
 					nodeToAdd.addInstance(new BasicInstance(instanceNameAttrib, nodeToAdd.getId(), values, classAttrib));
-					numberOfInstances++;
+					oveallNumberOfInstances++;
 					nodes.add(nodeToAdd);
 					if(root == null && lineValues[0].equalsIgnoreCase(Constants.ROOT_ID))
 					{
@@ -147,6 +147,6 @@ public class GeneratedCSVReader implements DataReader {
 		
 		LinkedList<Node> allNodes = HierarchyFiller.addMissingEmptyNodes(root, nodes, rootIndexInNodes, fillBreathGaps,
 				useSubtree);
-		return new BasicHierarchy(root, allNodes, eachClassAndItsCount, numberOfInstances);
+		return new BasicHierarchy(root, allNodes, eachClassAndItsCount, oveallNumberOfInstances);
 	}
 }
