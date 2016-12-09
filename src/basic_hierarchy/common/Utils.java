@@ -47,9 +47,9 @@ public class Utils {
 
         Node root = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
 
-        LinkedList<Node> groups = new LinkedList<>();
-        groups.add(root);
+        LinkedList<Node> nodes = new LinkedList<>();
+        nodes.add(root);
 
-        return new BasicHierarchy(root, groups, h.getClasses(), h.getClassesCount(), h.getOverallNumberOfInstances());
+        return new BasicHierarchy(root, nodes, h.getDataNames(), h.getClasses(), h.getClassesCount(), h.getOverallNumberOfInstances());
     }
 }

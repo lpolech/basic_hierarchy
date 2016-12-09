@@ -1,9 +1,6 @@
 package basic_hierarchy.implementation;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.StringIdComparator;
@@ -12,97 +9,187 @@ import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.test.TestCommon;
 
-public class BasicHierarchy implements Hierarchy {
+
+public class BasicHierarchy implements Hierarchy
+{
 	private Node root;
-	private BasicNode[] groups;
+	private Node[] groups;
 	private String[] classes;
-    private int[] classesCount;
+    private int[] classCounts;
 	private int overallNumberOfInstances;
-	
-	public BasicHierarchy(Node root, LinkedList<Node> groups, HashMap<String, Integer> eachClassWithCount,
+    private String[] dataNames;
+
+    /**
+     * Creates a new hierarchy object.
+     *
+     * @param root
+     *            the root node of the hierarchy. Must not be null.
+     * @param nodes
+     *            list of all nodes in the hierarchy
+     * @param dataNames
+     *            array of names, for data columns in instances
+     * @param eachClassWithCount
+     *            map of classes (node identifiers) to the number of children nodes in that class
+     * @param overallNumberOfInstances
+     *            total number of instances in the hierarchy
+     */
+    public BasicHierarchy(
+            Node root, List<? extends Node> nodes,
+            String[] dataNames,
+            Map<String, Integer> eachClassWithCount,
+            int overallNumberOfInstances )
+    {
+        this(root, nodes, dataNames, overallNumberOfInstances);
+
+        classes = new String[eachClassWithCount.size()];
+        classCounts = new int[eachClassWithCount.size()];
+
+        LinkedList<String> sortedKeys = new LinkedList<String>( eachClassWithCount.keySet() );
+        Collections.sort( sortedKeys, new StringIdComparator() );
+        for ( int index = 0; index < sortedKeys.size(); ++index ) {
+            String key = sortedKeys.get( index );
+            classes[index] = key;
+            classCounts[index] = eachClassWithCount.get( key );
+        }
+    }
+
+    /**
+     * Creates a new hierarchy object.
+     *
+     * @param root
+     *            the root node of the hierarchy. Must not be null.
+     * @param nodes
+     *            list of all nodes in the hierarchy
+     * @param dataNames
+     *            array of names, for data columns in instances
+     * @param eachClassWithCount
+     *            map of classes (node identifiers) to the number of children nodes in that class
+     */
+    public BasicHierarchy(
+            Node root, List<? extends Node> nodes,
+            String[] dataNames,
+            Map<String, Integer> eachClassWithCount )
+    {
+        this( root, nodes, dataNames, eachClassWithCount, 0 );
+
+        for ( Node g : nodes ) {
+            this.overallNumberOfInstances += g.getNodeInstances().size();
+        }
+    }
+
+    public BasicHierarchy(
+            Node root, List<? extends Node> nodes,
+            Map<String, Integer> eachClassWithCount,
+            int overallNumberOfInstances )
+    {
+        this( root, nodes, null, eachClassWithCount, overallNumberOfInstances );
+    }
+
+	public BasicHierarchy(Node root, List<? extends Node>  nodes, HashMap<String, Integer> eachClassWithCount,
 			int overallNumberOfInstances)
 	{
-        this(root, groups, overallNumberOfInstances);
+        this(root, nodes, overallNumberOfInstances);
+        classes = new String[eachClassWithCount.size()];
+        classCounts = new int[eachClassWithCount.size()];
 
-		classes = new String[eachClassWithCount.size()];
-		classesCount = new int[eachClassWithCount.size()];
-		LinkedList<String> sortedKeyes = new LinkedList<String>(eachClassWithCount.keySet());
-		Collections.sort(sortedKeyes, new StringIdComparator());
-		int arrayIndex = 0;
-		for(String key: sortedKeyes)
-		{
-			classes[arrayIndex] = key;
-			classesCount[arrayIndex] = eachClassWithCount.get(key);
-			arrayIndex++;
-		}
-	}
+        LinkedList<String> sortedKeys = new LinkedList<String>( eachClassWithCount.keySet() );
+        Collections.sort( sortedKeys, new StringIdComparator() );
 
-    public BasicHierarchy(Node root, LinkedList<Node> groups, String[] classes, int[] classesCount, int overallNumberOfInstances)
-    {
-        this(root, groups, overallNumberOfInstances);
-        this.classes = classes;
-        this.classesCount = classesCount;
+        for ( int index = 0; index < sortedKeys.size(); ++index ) {
+            String key = sortedKeys.get( index );
+            classes[index] = key;
+            classCounts[index] = eachClassWithCount.get( key );
+        }
     }
 
-    private BasicHierarchy(Node root, LinkedList<Node> groups, int overallNumberOfInstances) {
+    public BasicHierarchy(Node root, List<? extends Node>  nodes, String[] dataNames, String[] classes, int[] classesCount,
+                          int overallNumberOfInstances)
+    {
+        this(root, nodes, dataNames, overallNumberOfInstances);
+        this.classes = classes;
+        this.classCounts = classesCount;
+    }
+
+    private BasicHierarchy(Node root, List<? extends Node>  nodes, int overallNumberOfInstances) {
+        if ( root == null ) {
+            throw new IllegalArgumentException( "Root node must not be null." );
+        }
         this.root = root;
-        this.groups = groups.toArray(new BasicNode[groups.size()]);
+        this.groups = nodes.toArray(new BasicNode[nodes.size()]);
+        this.overallNumberOfInstances = overallNumberOfInstances;
+        this.dataNames = null;
+    }
+
+    private BasicHierarchy(Node root, List<? extends Node>  nodes, String[] dataNames, int overallNumberOfInstances) {
+        if ( root == null ) {
+            throw new IllegalArgumentException( "Root node must not be null." );
+        }
+        this.root = root;
+        this.groups = nodes.toArray(new BasicNode[nodes.size()]);
+        this.dataNames = dataNames;
         this.overallNumberOfInstances = overallNumberOfInstances;
     }
-	
+
 	@Override
-	public Node getRoot() {
+	public Node getRoot()
+	{
 		return root;
 	}
 
 	@Override
-	public int getNumberOfGroups() {
+	public int getNumberOfGroups()
+	{
 		return groups.length;
 	}
 
 	@Override
-	public int getNumberOfClasses() {
+	public int getNumberOfClasses()
+	{
 		return classes.length;
 	}
 
 	@Override
-	public Node[] getGroups() {
+	public Node[] getGroups()
+	{
 		return groups;
 	}
 
 	@Override
-	public String[] getClasses() {
+	public String[] getClasses()
+	{
 		return classes;
 	}
 
     @Override
 	public int[] getClassesCount() {
-        return classesCount;
+        return classCounts;
     }
 
 	@Override
 	public int getParticularClassCount(String className, boolean withInstancesInheritance) {
-		int index = Arrays.binarySearch(classes, className, new StringIdComparator());
-		if(index < 0)
+		int index = Arrays.binarySearch( classes, className, new StringIdComparator() );
+
+		if ( index < 0 ) {
+			// Not found.
 			return index;
-		else
-		{
-			//REFACTOR below code could be faster, by moving the computations into the constructor in a smart way
-			//e.g. by using the partial results (from other classes) to compute results for other classes
-			if(withInstancesInheritance)
-			{
-				int returnValue = classesCount[index];
-				for(int i = index; i < classesCount.length; i++)
-				{
-					if(className.length() < classes[i].length() && classes[i].startsWith(className+Constants.HIERARCHY_BRANCH_SEPARATOR))
-					{
-						returnValue += classesCount[i];
+		}
+		else {
+			// REFACTOR below code could be faster, by moving the computations into the constructor in a smart way
+			// e.g. by using the partial results (from other classes) to compute results for other classes
+			if ( withInstancesInheritance ) {
+				String prefix = className + Constants.HIERARCHY_BRANCH_SEPARATOR;
+				int result = classCounts[index];
+				for ( int i = index; i < classCounts.length; ++i ) {
+					if ( className.length() < classes[i].length() && classes[i].startsWith( prefix ) ) {
+						result += classCounts[i];
 					}
 				}
-				return returnValue;
+
+				return result;
 			}
-			else
-				return classesCount[index];
+			else {
+				return classCounts[index];
+			}
 		}
 	}
 
@@ -111,20 +198,14 @@ public class BasicHierarchy implements Hierarchy {
 	}
 
 	@Override
-	public void printTree() {
-		if(root != null)
-			root.printSubtree();
-	}
-
-	@Override
 	public Hierarchy getFlatClusteringWithCommonEmptyRoot() {
-		Node artificialRoot = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), new LinkedList<Instance>(), false);
+        Node artificialRoot = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), new LinkedList<Instance>(), false);
 
-		LinkedList<Node> groups = new LinkedList<>();
-		groups.add(artificialRoot);
-		int nodesCounter = 0;
-		for(Node n: this.getGroups()) {
-		    if(!n.getNodeInstances().isEmpty()) {
+        LinkedList<Node> groups = new LinkedList<>();
+        groups.add(artificialRoot);
+        int nodesCounter = 0;
+        for (Node n : this.getGroups()) {
+            if (!n.getNodeInstances().isEmpty()) {
                 Node nodeToAdd = new BasicNode(TestCommon.getIDOfChildCluster(Constants.ROOT_ID, nodesCounter++),
                         artificialRoot, new LinkedList<Node>(), new LinkedList<Instance>(), false);
 
@@ -138,6 +219,27 @@ public class BasicHierarchy implements Hierarchy {
             }
         }
 
-		return new BasicHierarchy(artificialRoot, groups, this.classes, this.classesCount, this.overallNumberOfInstances);
+        return new BasicHierarchy(artificialRoot, groups, this.dataNames, this.classes, this.classCounts, this.overallNumberOfInstances);
+    }
+
+	@Override
+	public String[] getDataNames()
+	{
+		return dataNames;
+	}
+
+	@Override
+	public String toString()
+	{
+		if ( root != null ) {
+			return root.toString();
+		}
+
+		throw new RuntimeException( "Implementation error: this hierarchy has no root node." );
+	}
+
+	public void printTree()
+	{
+		root.printSubtree();
 	}
 }
