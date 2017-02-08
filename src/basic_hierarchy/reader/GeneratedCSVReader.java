@@ -28,6 +28,7 @@ public class GeneratedCSVReader implements DataReader
     private static final String REGEX_NODE_ID = "gen(" + Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX + "\\d+)+";
 
     private boolean assertOrder = false;
+    private volatile int progress = 0;
 
 
     public GeneratedCSVReader()
@@ -72,6 +73,8 @@ public class GeneratedCSVReader implements DataReader
         boolean fixBreadthGaps,
         boolean useSubtree ) throws IOException
     {
+        progress = 0;
+
         // REFACTOR: Could create a factory class to generate nodes.
         // REFACTOR: Skip nodes' elements containing "gen" prefix and assume that every ID prefix always begins with "gen"
         File inputFile = new File( filePath );
@@ -92,6 +95,9 @@ public class GeneratedCSVReader implements DataReader
 
         Reader reader = new InputStreamReader( new FileInputStream( filePath ), "UTF-8" );
 
+        final long bytesTotal = inputFile.length();
+        long bytesRead = 0;
+
         try ( BufferedReader br = new BufferedReader( reader ) ) {
             final int optionalColumns = boolToInt( withTrueClassAttribute ) + boolToInt( withInstancesNameAttribute );
             final int minimumColumnCount = 1 + optionalColumns;
@@ -99,6 +105,11 @@ public class GeneratedCSVReader implements DataReader
             int totalColumnCount = -1;
 
             for ( String inputLine; ( inputLine = br.readLine() ) != null; ) {
+                checkInterruptStatus();
+
+                bytesRead += inputLine.getBytes( "UTF-8" ).length;
+                progress = (int)( 100 * ( (double)bytesRead / bytesTotal ) );
+
                 String[] lineValues = inputLine.split( Constants.DELIMITER );
 
                 if ( dataColumnCount == -1 ) {
@@ -191,6 +202,8 @@ public class GeneratedCSVReader implements DataReader
             }
         }
 
+        progress = 100;
+
         if ( assertOrder ) {
             List<BasicNode> t = new ArrayList<>( nodes );
             Collections.sort( t, new NodeIdComparator() );
@@ -205,6 +218,8 @@ public class GeneratedCSVReader implements DataReader
             // If root was missing from input file, then it must've been created artificially - find it.
             // List of nodes should be sorted by ID, therefore finding root should have negligible overhead.
             for ( Node node : allNodes ) {
+                checkInterruptStatus();
+
                 if ( node.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
                     root = (BasicNode)node;
                     break;
@@ -213,6 +228,24 @@ public class GeneratedCSVReader implements DataReader
         }
 
         return new BasicHierarchy( root, allNodes, dataNames, eachClassAndItsCount, overallNumberOfInstances );
+    }
+
+    /**
+     * @return value representing progress of reading the file, values [0, 100].
+     */
+    public int getProgress()
+    {
+        return progress;
+    }
+
+    /**
+     * Checks whether the current thread has been interrupted.
+     * If it was, clears the interrupt flag and throws an exception.
+     */
+    private static void checkInterruptStatus()
+    {
+        if ( Thread.interrupted() )
+            throw new RuntimeInterruptedException();
     }
 
     /**
@@ -327,5 +360,11 @@ public class GeneratedCSVReader implements DataReader
         }
 
         return null;
+    }
+
+
+    @SuppressWarnings("serial")
+    public static class RuntimeInterruptedException extends RuntimeException
+    {
     }
 }
