@@ -60,6 +60,8 @@ public class HierarchyBuilder
         }
 
         for ( BasicNode n : nodes ) {
+            Utils.checkInterruptStatus();
+
             n.recalculateCentroid( useSubtree );
         }
 
@@ -93,6 +95,8 @@ public class HierarchyBuilder
         }
 
         for ( int i = 0; i < nodes.size(); ++i ) {
+            Utils.checkInterruptStatus();
+
             BasicNode parent = nodes.get( i );
 
             for ( int j = 0; j < nodes.size(); ++j ) {
@@ -131,6 +135,8 @@ public class HierarchyBuilder
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
         for ( int i = 0; i < nodes.size(); ++i ) {
+            Utils.checkInterruptStatus();
+
             BasicNode node = nodes.get( i );
 
             if ( node == root ) {
@@ -244,6 +250,8 @@ public class HierarchyBuilder
         pendingNodes.add( root );
 
         while ( !pendingNodes.isEmpty() ) {
+            Utils.checkInterruptStatus();
+            
             BasicNode current = pendingNodes.remove();
 
             // Enqueue child nodes for processing ahead of time, so that we don't
