@@ -15,7 +15,6 @@ import java.util.Map;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.common.NodeIdComparator;
-import basic_hierarchy.common.StringIdComparator;
 import basic_hierarchy.common.Utils;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
@@ -330,8 +329,6 @@ public class GeneratedCSVReader implements DataReader
      */
     private static BasicNode findNodeWithId( List<BasicNode> nodes, String id )
     {
-        StringIdComparator c = new StringIdComparator();
-
         // Use binary search to find the node.
         int low = 0;
         int high = nodes.size() - 1;
@@ -340,7 +337,7 @@ public class GeneratedCSVReader implements DataReader
             int mid = ( low + high ) >>> 1;
             BasicNode node = nodes.get( mid );
 
-            int r = c.compare( node.getId(), id );
+            int r = node.getId().compareTo( id );
 
             if ( r < 0 )
                 low = mid + 1;

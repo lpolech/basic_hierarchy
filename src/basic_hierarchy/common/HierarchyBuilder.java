@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.TreeMap;
 
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
@@ -134,6 +135,15 @@ public class HierarchyBuilder
     {
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
+        // TreeMap allows us to quickly find the nearest ancestor by sequentially checking lower keys,
+        // and returning the one that is a descendant to the one we're testing against.
+        // Since the map is automatically sorted in an ascending order, that key is also guaranteed to be nearest.
+        // (unless I've missed a crucial edge-case)
+        TreeMap<String, BasicNode> treeMap = new TreeMap<>();
+        for ( BasicNode node : nodes ) {
+            treeMap.put( node.getId(), node );
+        }
+
         for ( int i = 0; i < nodes.size(); ++i ) {
             Utils.checkInterruptStatus();
 
@@ -145,24 +155,15 @@ public class HierarchyBuilder
             }
 
             if ( node.getParent() == null ) {
-                BasicNode nearestAncestor = null;
-                int candidateHeight = -1;
-
-                // Try to find nearest parent in 'real' nodes
-                BasicNode candidate = findNearestAncestor( nodes, node.getId(), -1, i );
-                if ( candidate != null ) {
-                    nearestAncestor = candidate;
-                    candidateHeight = getNodeHeight( candidate );
-                }
-
-                // Try to find nearest parent in artificial nodes
-                candidate = findNearestAncestor( artificialNodes, node.getId(), candidateHeight );
-                if ( candidate != null ) {
-                    nearestAncestor = candidate;
-                }
+                BasicNode nearestAncestor = findNearestAncestor( treeMap, node.getId() );
 
                 if ( nearestAncestor != null ) {
-                    artificialNodes.addAll( fixDepthGapsBetween( nearestAncestor, node, useSubtree ) );
+                    List<BasicNode> intermediaries = fixDepthGapsBetween( nearestAncestor, node, useSubtree );
+                    artificialNodes.addAll( intermediaries );
+
+                    for ( BasicNode intermediary : intermediaries ) {
+                        treeMap.put( intermediary.getId(), intermediary );
+                    }
                 }
                 else {
                     throw new RuntimeException(
@@ -251,7 +252,7 @@ public class HierarchyBuilder
 
         while ( !pendingNodes.isEmpty() ) {
             Utils.checkInterruptStatus();
-            
+
             BasicNode current = pendingNodes.remove();
 
             // Enqueue child nodes for processing ahead of time, so that we don't
@@ -326,59 +327,53 @@ public class HierarchyBuilder
     }
 
     /**
-     * {@link #findNearestAncestor(List, String[], int, int)}
-     */
-    public static BasicNode findNearestAncestor( List<BasicNode> nodes, String childId, int nearestHeight )
-    {
-        return findNearestAncestor( nodes, childId, nearestHeight, -1 );
-    }
-
-    /**
      * Attempts to find the nearest existing node that can act as an ancestor to the node specified in argument. IF no such
      * node could be found, this method returns null.
      * <p>
      * This method relies on the nodes' IDs being correctly formatted and allowing us to infer the parent-child relations.
      * </p>
      * 
-     * @param nodes
-     *            list of nodes to search in
-     * @param childBranchIds
-     *            ID segments of the node for which we're trying to find an ancestor
-     * @param nearestHeight
-     *            number of segments of the best candidate we have available currently (can be negative to mean 'none')
-     * @param maxIndex
-     *            max index to search to in the list of nodes, for bounding purposes (can be negative to perform an unbounded search)
+     * @param treeMap
+     *            tree map containing all nodes thus far (both real and artificial ones)
+     * @param childId
+     *            id of the child node we're trying to find an ancestor for
      * @return the nearest node that can act as an ancestor, or null if not found
      */
-    public static BasicNode findNearestAncestor( List<BasicNode> nodes, String childId, int nearestHeight, int maxIndex )
+    private static BasicNode findNearestAncestor( TreeMap<String, BasicNode> treeMap, String childId )
     {
-        if ( maxIndex < 0 ) {
-            maxIndex = nodes.size();
-        }
+        String prevKey = childId;
 
-        BasicNode result = null;
+        int size = treeMap.size();
+        for ( int i = 0; i < size; ++i ) {
+            String candidateKey = treeMap.lowerKey( prevKey );
 
-        for ( int i = 0; i < maxIndex; ++i ) {
-            BasicNode parent = nodes.get( i );
-            String parentId = parent.getId();
-            int parentHeight = getIdHeight( parentId );
-
-            if ( parentHeight > nearestHeight ) {
-                if ( areIdsAncestorAndDescendant( parentId, childId ) ) {
-                    result = parent;
-                    nearestHeight = parentHeight;
-                }
+            if ( areIdsAncestorAndDescendant( candidateKey, childId ) ) {
+                return treeMap.get( candidateKey );
             }
+
+            prevKey = candidateKey;
         }
 
-        return result;
+        return null;
     }
 
+    /**
+     * @param n
+     *            the node to compute the node height for
+     * 
+     * @return height of the node (how deep it is within the tree). 1 means root node.
+     */
     public static int getNodeHeight( Node n )
     {
         return getIdHeight( n.getId() );
     }
 
+    /**
+     * @param id
+     *            the id to compute the node height for
+     * 
+     * @return height of the node (how deep it is within the tree). 1 means root node.
+     */
     public static int getIdHeight( String id )
     {
         return id.length() - id.replace( Constants.HIERARCHY_BRANCH_SEPARATOR, "" ).length();
@@ -395,7 +390,7 @@ public class HierarchyBuilder
     }
 
     /**
-     * {@link #areIdsParentAndChild(String[], String[])}
+     * {@link #areIdsParentAndChild(String, String)}
      */
     public static boolean areNodesParentAndChild( Node parent, Node child )
     {
@@ -406,7 +401,7 @@ public class HierarchyBuilder
     }
 
     /**
-     * {@link #areIdsAncestorAndDescendant(String[], String[])}
+     * {@link #areIdsAncestorAndDescendant(String, String)}
      */
     public static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
     {
@@ -417,7 +412,14 @@ public class HierarchyBuilder
     }
 
     /**
-     * {@link #areIdsParentAndChild(String[], String[])}
+     * Checks whether the two IDs represent nodes that are directly related (parent-child).
+     * This method returns false if both IDs point to the same node.
+     * 
+     * @param parentId
+     *            ID of the node acting as parent
+     * @param childId
+     *            ID of the node acting as child
+     * @return whether the two nodes are in a direct parent-child relationship.
      */
     public static boolean areIdsParentAndChild( String parentId, String childId )
     {
@@ -426,57 +428,18 @@ public class HierarchyBuilder
     }
 
     /**
-     * {@link #areIdsAncestorAndDescendant(String[], String[])}
-     */
-    public static boolean areIdsAncestorAndDescendant( String parentId, String childId )
-    {
-        return childId.startsWith( parentId ) &&
-            childId.charAt( parentId.length() ) == branchSeparator;
-    }
-
-    /**
-     * Checks whether the two IDs represent nodes that are directly related (parent-child).
-     * This method returns false if both IDs point to the same node.
-     * 
-     * @param parentIds
-     *            ID segments of the node acting as parent
-     * @param childIds
-     *            ID segments of the node acting as child
-     * @return whether the two nodes are in a direct parent-child relationship.
-     */
-    public static boolean areIdsParentAndChild( String[] parentIds, String[] childIds )
-    {
-        // Check that the child is exactly one level 'deeper' than the parent, and then
-        // compare the node IDs to verify that they are related.
-        return ( parentIds.length + 1 == childIds.length ) &&
-            areIdsAncestorAndDescendant( parentIds, childIds );
-    }
-
-    /**
      * Checks whether the two IDs represent nodes that are indirectly related (ancestor-descendant).
      * This method returns false if both IDs point to the same node.
      * 
      * @param ancestorIds
-     *            ID segments of the node acting as ancestor
+     *            ID of the node acting as ancestor
      * @param descendantIds
-     *            ID segments of the node acting as descendant
+     *            ID of the node acting as descendant
      * @return whether the two nodes are in a ancestor-descendant relationship.
      */
-    public static boolean areIdsAncestorAndDescendant( String[] ancestorIds, String[] descendantIds )
+    public static boolean areIdsAncestorAndDescendant( String ancestorId, String descendantId )
     {
-        if ( ancestorIds.length < descendantIds.length ) {
-            for ( int i = 0; i < ancestorIds.length; ++i ) {
-                if ( !ancestorIds[i].equals( descendantIds[i] ) ) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        else {
-            // 'ancestor' ID has more segments than 'descendant', which means there's no way
-            // it can be an ancestor to the other node.
-            return false;
-        }
+        return !ancestorId.equals( descendantId ) && descendantId.startsWith( ancestorId ) &&
+            descendantId.charAt( ancestorId.length() ) == branchSeparator;
     }
 }
