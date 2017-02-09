@@ -358,7 +358,7 @@ public class HierarchyBuilder
     /**
      * Convenience method to split a node's IDs into segments for easier processing.
      */
-    private static String[] getNodeIdSegments( Node n )
+    public static String[] getNodeIdSegments( Node n )
     {
         String[] result = n.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
         // Ignore the first index ('gen')
@@ -368,7 +368,7 @@ public class HierarchyBuilder
     /**
      * {@link #areIdsParentAndChild(String[], String[])}
      */
-    private static boolean areNodesParentAndChild( Node parent, Node child )
+    public static boolean areNodesParentAndChild( Node parent, Node child )
     {
         return areIdsParentAndChild(
             getNodeIdSegments( parent ),
@@ -379,7 +379,7 @@ public class HierarchyBuilder
     /**
      * {@link #areIdsAncestorAndDescendant(String[], String[])}
      */
-    private static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
+    public static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
     {
         return areIdsAncestorAndDescendant(
             getNodeIdSegments( ancestor ),
@@ -397,7 +397,7 @@ public class HierarchyBuilder
      *            ID segments of the node acting as child
      * @return whether the two nodes are in a direct parent-child relationship.
      */
-    private static boolean areIdsParentAndChild( String[] parentIds, String[] childIds )
+    public static boolean areIdsParentAndChild( String[] parentIds, String[] childIds )
     {
         // Check that the child is exactly one level 'deeper' than the parent, and then
         // compare the node IDs to verify that they are related.
@@ -415,7 +415,7 @@ public class HierarchyBuilder
      *            ID segments of the node acting as descendant
      * @return whether the two nodes are in a ancestor-descendant relationship.
      */
-    private static boolean areIdsAncestorAndDescendant( String[] ancestorIds, String[] descendantIds )
+    public static boolean areIdsAncestorAndDescendant( String[] ancestorIds, String[] descendantIds )
     {
         if ( ancestorIds.length < descendantIds.length ) {
             for ( int i = 0; i < ancestorIds.length; ++i ) {
