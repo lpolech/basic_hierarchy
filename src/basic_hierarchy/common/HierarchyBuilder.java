@@ -94,7 +94,6 @@ public class HierarchyBuilder
 
         for ( int i = 0; i < nodes.size(); ++i ) {
             BasicNode parent = nodes.get( i );
-            String[] parentBranchIds = getNodeIdSegments( parent );
 
             for ( int j = 0; j < nodes.size(); ++j ) {
                 if ( i == j ) {
@@ -103,9 +102,8 @@ public class HierarchyBuilder
                 }
 
                 BasicNode child = nodes.get( j );
-                String[] childBranchIds = getNodeIdSegments( child );
 
-                if ( areIdsParentAndChild( parentBranchIds, childBranchIds ) ) {
+                if ( areIdsParentAndChild( parent.getId(), child.getId() ) ) {
                     child.setParent( parent );
                     parent.addChild( child );
                 }
@@ -141,20 +139,18 @@ public class HierarchyBuilder
             }
 
             if ( node.getParent() == null ) {
-                String[] nodeBranchIds = getNodeIdSegments( node );
-
                 BasicNode nearestAncestor = null;
                 int candidateHeight = -1;
 
                 // Try to find nearest parent in 'real' nodes
-                BasicNode candidate = findNearestAncestor( nodes, nodeBranchIds, -1, i );
+                BasicNode candidate = findNearestAncestor( nodes, node.getId(), -1, i );
                 if ( candidate != null ) {
                     nearestAncestor = candidate;
-                    candidateHeight = getNodeIdSegments( candidate ).length;
+                    candidateHeight = getNodeHeight( candidate );
                 }
 
                 // Try to find nearest parent in artificial nodes
-                candidate = findNearestAncestor( artificialNodes, nodeBranchIds, candidateHeight );
+                candidate = findNearestAncestor( artificialNodes, node.getId(), candidateHeight );
                 if ( candidate != null ) {
                     nearestAncestor = candidate;
                 }
@@ -191,12 +187,20 @@ public class HierarchyBuilder
     {
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
-        String[] descendantBranchIds = getNodeIdSegments( descendant );
-        int ancestorHeight = getNodeIdSegments( ancestor ).length;
+        int descendantHeight = getNodeHeight( descendant );
+        int ancestorHeight = getNodeHeight( ancestor );
+
+        String rest = descendant.getId().substring( ancestor.getId().length() + 1 );
 
         BasicNode newParent = ancestor;
-        for ( int j = ancestorHeight; j < descendantBranchIds.length - 1; ++j ) {
-            String newId = newParent.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + descendantBranchIds[j];
+        int prevIdx = 0;
+        for ( int j = ancestorHeight; j < descendantHeight - 1; ++j ) {
+            // Find the range that we need to read
+            int idx = rest.indexOf( Constants.HIERARCHY_BRANCH_SEPARATOR, prevIdx );
+            String part = rest.substring( prevIdx, idx );
+            String newId = newParent.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + part;
+            // Remove the part we've parsed.
+            prevIdx = idx + 1;
 
             // Add an empty node
             BasicNode newNode = new BasicNode(
@@ -274,8 +278,11 @@ public class HierarchyBuilder
         for ( int i = 0; i < children.size(); ++i ) {
             Node child = children.get( i );
 
-            String[] ids = getNodeIdSegments( child );
-            if ( ids[ids.length - 1].equals( Integer.toString( i ) ) ) {
+            String id = child.getId();
+            int idx = id.lastIndexOf( Constants.HIERARCHY_BRANCH_SEPARATOR );
+            String lastSegment = id.substring( idx + 1 );
+
+            if ( lastSegment.equals( Integer.toString( i ) ) ) {
                 // Assert that the existing nodes have correct relationships.
                 if ( !areNodesAncestorAndDescendant( node, child ) ) {
                     throw new RuntimeException(
@@ -313,9 +320,9 @@ public class HierarchyBuilder
     /**
      * {@link #findNearestAncestor(List, String[], int, int)}
      */
-    private static BasicNode findNearestAncestor( List<BasicNode> nodes, String[] childBranchIds, int nearestHeight )
+    public static BasicNode findNearestAncestor( List<BasicNode> nodes, String childId, int nearestHeight )
     {
-        return findNearestAncestor( nodes, childBranchIds, nearestHeight, -1 );
+        return findNearestAncestor( nodes, childId, nearestHeight, -1 );
     }
 
     /**
@@ -335,7 +342,7 @@ public class HierarchyBuilder
      *            max index to search to in the list of nodes, for bounding purposes (can be negative to perform an unbounded search)
      * @return the nearest node that can act as an ancestor, or null if not found
      */
-    private static BasicNode findNearestAncestor( List<BasicNode> nodes, String[] childBranchIds, int nearestHeight, int maxIndex )
+    public static BasicNode findNearestAncestor( List<BasicNode> nodes, String childId, int nearestHeight, int maxIndex )
     {
         if ( maxIndex < 0 ) {
             maxIndex = nodes.size();
@@ -345,12 +352,13 @@ public class HierarchyBuilder
 
         for ( int i = 0; i < maxIndex; ++i ) {
             BasicNode parent = nodes.get( i );
-            String[] parentBranchIds = getNodeIdSegments( parent );
+            String parentId = parent.getId();
+            int parentHeight = getIdHeight( parentId );
 
-            if ( parentBranchIds.length > nearestHeight ) {
-                if ( areIdsAncestorAndDescendant( parentBranchIds, childBranchIds ) ) {
+            if ( parentHeight > nearestHeight ) {
+                if ( areIdsAncestorAndDescendant( parentId, childId ) ) {
                     result = parent;
-                    nearestHeight = parentBranchIds.length;
+                    nearestHeight = parentHeight;
                 }
             }
         }
@@ -384,8 +392,8 @@ public class HierarchyBuilder
     public static boolean areNodesParentAndChild( Node parent, Node child )
     {
         return areIdsParentAndChild(
-            getNodeIdSegments( parent ),
-            getNodeIdSegments( child )
+            parent.getId(),
+            child.getId()
         );
     }
 
@@ -395,8 +403,8 @@ public class HierarchyBuilder
     public static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
     {
         return areIdsAncestorAndDescendant(
-            getNodeIdSegments( ancestor ),
-            getNodeIdSegments( descendant )
+            ancestor.getId(),
+            descendant.getId()
         );
     }
 
