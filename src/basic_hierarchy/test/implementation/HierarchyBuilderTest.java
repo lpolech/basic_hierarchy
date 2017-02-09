@@ -95,7 +95,7 @@ public class HierarchyBuilderTest
         // Compiling under Java 7, can't use lambdas...
         List<BasicNode> gen11 = new ArrayList<BasicNode>();
         for ( BasicNode n : artificialBreadth ) {
-            if ( n.getId().startsWith( "gen.0.0.0.11." ) )
+            if ( n.getId().startsWith( "gen.0.0.11." ) )
                 gen11.add( n );
         }
 
