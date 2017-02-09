@@ -17,6 +17,9 @@ import basic_hierarchy.interfaces.Node;
  */
 public class HierarchyBuilder
 {
+    private static char branchSeparator = Constants.HIERARCHY_BRANCH_SEPARATOR.charAt( 0 );
+
+
     private HierarchyBuilder()
     {
         // Static class -- disallow instantiation.
@@ -411,7 +414,8 @@ public class HierarchyBuilder
      */
     public static boolean areIdsAncestorAndDescendant( String parentId, String childId )
     {
-        return childId.startsWith( parentId );
+        return childId.startsWith( parentId ) &&
+            childId.charAt( parentId.length() ) == branchSeparator;
     }
 
     /**

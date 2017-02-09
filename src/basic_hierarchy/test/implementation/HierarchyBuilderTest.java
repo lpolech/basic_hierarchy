@@ -30,6 +30,13 @@ public class HierarchyBuilderTest
         nodes.add( new BasicNode( "gen.0.0.11.3", null, false ) );
         nodes.add( new BasicNode( "gen.0.0.11.5", null, false ) );
     }
+
+    @Test
+    public void assertBranchSeparatorSingleChar()
+    {
+        // HierarchyBuilder makes optimizations under the assumption that the branch
+        // separator for node IDs is a single character.
+        Assert.assertEquals( 1, Constants.HIERARCHY_BRANCH_SEPARATOR.length() );
     }
 
     @Test
