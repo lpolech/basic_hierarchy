@@ -355,6 +355,16 @@ public class HierarchyBuilder
         return result;
     }
 
+    public static int getNodeHeight( Node n )
+    {
+        return getIdHeight( n.getId() );
+    }
+
+    public static int getIdHeight( String id )
+    {
+        return id.length() - id.replace( Constants.HIERARCHY_BRANCH_SEPARATOR, "" ).length();
+    }
+
     /**
      * Convenience method to split a node's IDs into segments for easier processing.
      */
@@ -385,6 +395,23 @@ public class HierarchyBuilder
             getNodeIdSegments( ancestor ),
             getNodeIdSegments( descendant )
         );
+    }
+
+    /**
+     * {@link #areIdsParentAndChild(String[], String[])}
+     */
+    public static boolean areIdsParentAndChild( String parentId, String childId )
+    {
+        return areIdsAncestorAndDescendant( parentId, childId ) &&
+            childId.substring( parentId.length() + 1 ).indexOf( Constants.HIERARCHY_BRANCH_SEPARATOR ) == -1;
+    }
+
+    /**
+     * {@link #areIdsAncestorAndDescendant(String[], String[])}
+     */
+    public static boolean areIdsAncestorAndDescendant( String parentId, String childId )
+    {
+        return childId.startsWith( parentId );
     }
 
     /**
