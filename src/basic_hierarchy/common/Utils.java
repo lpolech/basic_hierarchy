@@ -52,4 +52,19 @@ public class Utils {
 
         return new BasicHierarchy(root, nodes, h.getDataNames(), h.getClasses(), h.getClassesCount(), h.getOverallNumberOfInstances());
     }
+
+    /**
+     * Checks whether the current thread has been interrupted.
+     * If it was, clears the interrupt flag and throws an exception.
+     */
+    public static void checkInterruptStatus()
+    {
+        if ( Thread.interrupted() )
+            throw new RuntimeInterruptedException();
+    }
+
+    @SuppressWarnings("serial")
+    public static class RuntimeInterruptedException extends RuntimeException
+    {
+    }
 }

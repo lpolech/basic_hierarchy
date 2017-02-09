@@ -16,6 +16,7 @@ import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.common.NodeIdComparator;
 import basic_hierarchy.common.StringIdComparator;
+import basic_hierarchy.common.Utils;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
@@ -105,7 +106,7 @@ public class GeneratedCSVReader implements DataReader
             int totalColumnCount = -1;
 
             for ( String inputLine; ( inputLine = br.readLine() ) != null; ) {
-                checkInterruptStatus();
+                Utils.checkInterruptStatus();
 
                 bytesRead += inputLine.getBytes( "UTF-8" ).length;
                 progress = (int)( 100 * ( (double)bytesRead / bytesTotal ) );
@@ -218,7 +219,7 @@ public class GeneratedCSVReader implements DataReader
             // If root was missing from input file, then it must've been created artificially - find it.
             // List of nodes should be sorted by ID, therefore finding root should have negligible overhead.
             for ( Node node : allNodes ) {
-                checkInterruptStatus();
+                Utils.checkInterruptStatus();
 
                 if ( node.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
                     root = (BasicNode)node;
@@ -236,16 +237,6 @@ public class GeneratedCSVReader implements DataReader
     public int getProgress()
     {
         return progress;
-    }
-
-    /**
-     * Checks whether the current thread has been interrupted.
-     * If it was, clears the interrupt flag and throws an exception.
-     */
-    private static void checkInterruptStatus()
-    {
-        if ( Thread.interrupted() )
-            throw new RuntimeInterruptedException();
     }
 
     /**
@@ -360,11 +351,5 @@ public class GeneratedCSVReader implements DataReader
         }
 
         return null;
-    }
-
-
-    @SuppressWarnings("serial")
-    public static class RuntimeInterruptedException extends RuntimeException
-    {
     }
 }
