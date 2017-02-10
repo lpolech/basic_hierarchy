@@ -136,10 +136,10 @@ public class HierarchyBuilder
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
         // TreeMap allows us to quickly find the nearest ancestor by sequentially checking lower keys,
-        // and returning the one that is a descendant to the one we're testing against.
+        // and returning the one that is an ancestor to the one we're testing against.
         // Since the map is automatically sorted in an ascending order, that key is also guaranteed to be nearest.
         // (unless I've missed a crucial edge-case)
-        TreeMap<String, BasicNode> treeMap = new TreeMap<>();
+        TreeMap<String, BasicNode> treeMap = new TreeMap<>( new AlphanumComparator() );
         for ( BasicNode node : nodes ) {
             treeMap.put( node.getId(), node );
         }
@@ -161,6 +161,7 @@ public class HierarchyBuilder
                     List<BasicNode> intermediaries = fixDepthGapsBetween( nearestAncestor, node, useSubtree );
                     artificialNodes.addAll( intermediaries );
 
+                    // Update the tree map with newly created nodes
                     for ( BasicNode intermediary : intermediaries ) {
                         treeMap.put( intermediary.getId(), intermediary );
                     }

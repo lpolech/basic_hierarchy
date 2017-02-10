@@ -1,6 +1,7 @@
 package basic_hierarchy.test.implementation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import basic_hierarchy.common.AlphanumComparator;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.implementation.BasicNode;
@@ -38,6 +40,26 @@ public class HierarchyBuilderTest
         // HierarchyBuilder makes optimizations under the assumption that the branch
         // separator for node IDs is a single character.
         Assert.assertEquals( 1, Constants.HIERARCHY_BRANCH_SEPARATOR.length() );
+    }
+
+    @Test
+    public void idOrdering()
+    {
+        // Test that the sorting algorithm works as we expect it to.
+        String[] expected = {
+            "gen.0.0.1",
+            "gen.0.0.1.0",
+            "gen.0.0.2",
+            "gen.0.0.10",
+            "gen.0.1",
+            "gen.0.2",
+            "gen.0.10.0"
+        };
+
+        String[] sorted = Arrays.copyOf( expected, expected.length );
+        Arrays.sort( sorted, new AlphanumComparator() );
+
+        Assert.assertArrayEquals( expected, sorted );
     }
 
     @Test

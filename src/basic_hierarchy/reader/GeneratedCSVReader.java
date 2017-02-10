@@ -8,10 +8,12 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import basic_hierarchy.common.AlphanumComparator;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.common.NodeIdComparator;
@@ -22,6 +24,7 @@ import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.DataReader;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Node;
+
 
 public class GeneratedCSVReader implements DataReader
 {
@@ -333,11 +336,13 @@ public class GeneratedCSVReader implements DataReader
         int low = 0;
         int high = nodes.size() - 1;
 
+        Comparator<String> comparator = new AlphanumComparator();
+
         while ( low <= high ) {
             int mid = ( low + high ) >>> 1;
             BasicNode node = nodes.get( mid );
 
-            int r = node.getId().compareTo( id );
+            int r = comparator.compare( node.getId(), id );
 
             if ( r < 0 )
                 low = mid + 1;
