@@ -20,7 +20,26 @@ public class HierarchyBuilder
 {
     private static char branchSeparator = Constants.HIERARCHY_BRANCH_SEPARATOR.charAt( 0 );
 
+    private volatile int progress = 0;
+    private volatile String statusMsg = "";
 
+
+    /**
+     * @return value representing progress of current operation, values [0, 100], or
+     *         negative for indeterminate operation.
+     */
+    public int getProgress()
+    {
+        return progress;
+    }
+
+    /**
+     * @return message describing the currently performed operation.
+     */
+    public String getStatusMessage()
+    {
+        return statusMsg;
+    }
 
     /**
      * Builds a complete hierarchy of nodes, while also patching up holes in the original hierarchy by inserting empty nodes
@@ -41,27 +60,43 @@ public class HierarchyBuilder
         BasicNode root, List<BasicNode> nodes,
         boolean fixBreadthGaps, boolean useSubtree )
     {
+        statusMsg = "";
+        progress = 0;
+
         if ( root == null ) {
             // Root node was missing from input file - create it artificially.
             root = new BasicNode( Constants.ROOT_ID, null, useSubtree );
             nodes.add( 0, root );
         }
 
+        statusMsg = "Creating parent-child relations...";
         createParentChildRelations( nodes );
 
+        statusMsg = "Fixing depth gaps...";
         nodes.addAll( fixDepthGaps( root, nodes, useSubtree ) );
 
         if ( fixBreadthGaps ) {
+            statusMsg = "Fixing breadth gaps...";
             nodes.addAll( fixBreadthGaps( root, useSubtree ) );
         }
 
+        statusMsg = "Recalculating centroids...";
+        progress = 0;
+        long total = nodes.size();
+        long current = 0;
         for ( BasicNode n : nodes ) {
             Utils.checkInterruptStatus();
+
+            ++current;
+            progress = (int)( 100 * ( (double)current / total ) );
 
             n.recalculateCentroid( useSubtree );
         }
 
+        statusMsg = "Sorting...";
+        progress = 0;
         Collections.sort( nodes, new NodeIdComparator() );
+        progress = 100;
 
         return nodes;
     }
@@ -84,15 +119,19 @@ public class HierarchyBuilder
      */
     private void createParentChildRelations( List<BasicNode> nodes )
     {
+        progress = 0;
+
         // Reset all previous relations first
         for ( BasicNode node : nodes ) {
             node.setChildren( new LinkedList<Node>() );
             node.setParent( null );
         }
 
-        for ( int i = 0; i < nodes.size(); ++i ) {
+        long total = nodes.size();
+        for ( int i = 0; i < total; ++i ) {
             Utils.checkInterruptStatus();
 
+            progress = (int)( 100 * ( (double)i / total ) );
             BasicNode parent = nodes.get( i );
 
             for ( int j = 0; j < nodes.size(); ++j ) {
@@ -128,6 +167,7 @@ public class HierarchyBuilder
      */
     public List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
     {
+        progress = 0;
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
         // TreeMap allows us to quickly find the nearest ancestor by sequentially checking lower keys,
@@ -139,9 +179,11 @@ public class HierarchyBuilder
             treeMap.put( node.getId(), node );
         }
 
-        for ( int i = 0; i < nodes.size(); ++i ) {
+        long total = nodes.size();
+        for ( int i = 0; i < total; ++i ) {
             Utils.checkInterruptStatus();
 
+            progress = (int)( 100 * ( (double)i / total ) );
             BasicNode node = nodes.get( i );
 
             if ( node == root ) {
@@ -241,6 +283,7 @@ public class HierarchyBuilder
      */
     public List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
     {
+        progress = -1;
         List<BasicNode> artificialNodes = new ArrayList<>();
 
         Queue<BasicNode> pendingNodes = new LinkedList<>();

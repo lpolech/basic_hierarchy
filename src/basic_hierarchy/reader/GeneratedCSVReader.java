@@ -35,6 +35,7 @@ public class GeneratedCSVReader implements DataReader
     private HierarchyBuilder hb = null;
 
     private volatile int progress = 0;
+    private volatile String statusMsg = "";
 
 
     public GeneratedCSVReader()
@@ -51,6 +52,23 @@ public class GeneratedCSVReader implements DataReader
     public GeneratedCSVReader( boolean assertOrder )
     {
         this.assertOrder = assertOrder;
+    }
+
+    /**
+     * @return value representing progress of reading the file, values [0, 100], or
+     *         negative for indeterminate operation.
+     */
+    public int getProgress()
+    {
+        return hb == null ? progress : hb.getProgress();
+    }
+
+    /**
+     * @return message describing the currently performed operation.
+     */
+    public String getStatusMessage()
+    {
+        return hb == null ? statusMsg : hb.getStatusMessage();
     }
 
     /**
@@ -79,6 +97,7 @@ public class GeneratedCSVReader implements DataReader
         boolean fixBreadthGaps,
         boolean useSubtree ) throws IOException
     {
+        statusMsg = "Parsing file...";
         progress = 0;
 
         // REFACTOR: Could create a factory class to generate nodes.
@@ -235,14 +254,6 @@ public class GeneratedCSVReader implements DataReader
         }
 
         return new BasicHierarchy( root, allNodes, dataNames, eachClassAndItsCount, overallNumberOfInstances );
-    }
-
-    /**
-     * @return value representing progress of reading the file, values [0, 100].
-     */
-    public int getProgress()
-    {
-        return progress;
     }
 
     /**
