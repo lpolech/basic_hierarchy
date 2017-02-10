@@ -31,6 +31,9 @@ public class GeneratedCSVReader implements DataReader
     private static final String REGEX_NODE_ID = "gen(" + Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX + "\\d+)+";
 
     private boolean assertOrder = false;
+
+    private HierarchyBuilder hb = null;
+
     private volatile int progress = 0;
 
 
@@ -205,6 +208,7 @@ public class GeneratedCSVReader implements DataReader
             }
         }
 
+        hb = new HierarchyBuilder();
         progress = 100;
 
         if ( assertOrder ) {
@@ -215,7 +219,7 @@ public class GeneratedCSVReader implements DataReader
             }
         }
 
-        List<? extends Node> allNodes = HierarchyBuilder.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
+        List<? extends Node> allNodes = hb.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
 
         if ( root == null ) {
             // If root was missing from input file, then it must've been created artificially - find it.

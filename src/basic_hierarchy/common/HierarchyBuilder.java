@@ -21,11 +21,6 @@ public class HierarchyBuilder
     private static char branchSeparator = Constants.HIERARCHY_BRANCH_SEPARATOR.charAt( 0 );
 
 
-    private HierarchyBuilder()
-    {
-        // Static class -- disallow instantiation.
-        throw new RuntimeException( "Attempted to instantiate a static class: " + getClass().getName() );
-    }
 
     /**
      * Builds a complete hierarchy of nodes, while also patching up holes in the original hierarchy by inserting empty nodes
@@ -42,7 +37,7 @@ public class HierarchyBuilder
      *            When set to {@code true}, all objects from subnodes are regarded as also belonging to their supernodes.
      * @return the complete 'fixed' collection of nodes, filled with artificial nodes
      */
-    public static List<? extends Node> buildCompleteHierarchy(
+    public List<? extends Node> buildCompleteHierarchy(
         BasicNode root, List<BasicNode> nodes,
         boolean fixBreadthGaps, boolean useSubtree )
     {
@@ -87,7 +82,7 @@ public class HierarchyBuilder
      * @param nodes
      *            collection of all nodes to build the hierarchy from
      */
-    private static void createParentChildRelations( List<BasicNode> nodes )
+    private void createParentChildRelations( List<BasicNode> nodes )
     {
         // Reset all previous relations first
         for ( BasicNode node : nodes ) {
@@ -131,7 +126,7 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
+    public List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
     {
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
@@ -191,7 +186,7 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
+    public List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
     {
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
@@ -244,7 +239,7 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
+    public List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
     {
         List<BasicNode> artificialNodes = new ArrayList<>();
 
@@ -277,7 +272,7 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
+    public List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
     {
         LinkedList<Node> children = node.getChildren();
         List<BasicNode> artificialNodes = new ArrayList<>();
@@ -340,7 +335,7 @@ public class HierarchyBuilder
      *            id of the child node we're trying to find an ancestor for
      * @return the nearest node that can act as an ancestor, or null if not found
      */
-    private static BasicNode findNearestAncestor( TreeMap<String, BasicNode> treeMap, String childId )
+    private BasicNode findNearestAncestor( TreeMap<String, BasicNode> treeMap, String childId )
     {
         String prevKey = childId;
 
