@@ -1,6 +1,7 @@
 package basic_hierarchy.test.implementation;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Assert;
@@ -42,6 +43,8 @@ public class HierarchyBuilderTest
     @Test
     public void fixDepthGaps() throws Exception
     {
+        // Test that fixDepthGaps algorithm works correctly.
+
         // Creates:
         // - gen.0.0
         // - gen.0.0.11
@@ -50,12 +53,12 @@ public class HierarchyBuilderTest
         // Assert that no unexpected nodes have been created
         Assert.assertEquals( 2, artificial.size() );
 
-        BasicNode artificial0 = artificial.get( 0 ); // gen.0.0
-        BasicNode artificial1 = artificial.get( 1 ); // gen.0.0.11
+        BasicNode artificial0 = findNodeWithId( artificial, "gen.0.0" );
+        BasicNode artificial1 = findNodeWithId( artificial, "gen.0.0.11" );
 
-        BasicNode leaf0 = nodes.get( 1 ); // gen.0.0.10
-        BasicNode leaf1 = nodes.get( 2 ); // gen.0.0.11.3
-        BasicNode leaf2 = nodes.get( 3 ); // gen.0.0.11.5
+        BasicNode leaf0 = findNodeWithId( nodes, "gen.0.0.10" );
+        BasicNode leaf1 = findNodeWithId( nodes, "gen.0.0.11.3" );
+        BasicNode leaf2 = findNodeWithId( nodes, "gen.0.0.11.5" );
 
         // Assert child -> parent relations
         Assert.assertEquals( root, artificial0.getParent() );
@@ -75,6 +78,8 @@ public class HierarchyBuilderTest
     @Test
     public void fixBreadthGaps() throws Exception
     {
+        // Test that fixBreadthGaps algorithm works correctly.
+
         // Creates:
         // - gen.0.0
         // - gen.0.0.11
@@ -88,7 +93,7 @@ public class HierarchyBuilderTest
         // - gen.0.0.11.4
         List<BasicNode> artificialBreadth = HierarchyBuilder.fixBreadthGaps( root, false );
 
-        BasicNode artificial1 = artificialDepth.get( 1 ); // gen.0.0.11
+        BasicNode artificial1 = findNodeWithId( artificialDepth, "gen.0.0.11" );
 
         Assert.assertEquals( 14, artificialBreadth.size() );
 
@@ -106,5 +111,15 @@ public class HierarchyBuilderTest
         for ( BasicNode leaf : gen11 ) {
             Assert.assertEquals( artificial1, leaf.getParent() );
         }
+    }
+
+    private BasicNode findNodeWithId( Collection<BasicNode> c, String id )
+    {
+        for ( BasicNode n : c ) {
+            if ( n.getId().equals( id ) )
+                return n;
+        }
+
+        return null;
     }
 }
