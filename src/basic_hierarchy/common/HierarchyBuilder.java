@@ -3,10 +3,11 @@ package basic_hierarchy.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
-import java.util.TreeMap;
 
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
@@ -170,13 +171,9 @@ public class HierarchyBuilder
         progress = 0;
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
-        // TreeMap allows us to quickly find the nearest ancestor by sequentially checking lower keys,
-        // and returning the one that is an ancestor to the one we're testing against.
-        // Since the map is automatically sorted in an ascending order, that key is also guaranteed to be nearest.
-        // (unless I've missed a crucial edge-case)
-        TreeMap<String, BasicNode> treeMap = new TreeMap<>( new AlphanumComparator() );
+        Map<String, BasicNode> idNodeMap = new HashMap<>( nodes.size() );
         for ( BasicNode node : nodes ) {
-            treeMap.put( node.getId(), node );
+            idNodeMap.put( node.getId(), node );
         }
 
         long total = nodes.size();
@@ -192,7 +189,7 @@ public class HierarchyBuilder
             }
 
             if ( node.getParent() == null ) {
-                BasicNode nearestAncestor = findNearestAncestor( treeMap, node.getId() );
+                BasicNode nearestAncestor = findNearestAncestor( idNodeMap, node.getId() );
 
                 if ( nearestAncestor != null ) {
                     List<BasicNode> intermediaries = fixDepthGapsBetween( nearestAncestor, node, useSubtree );
@@ -200,7 +197,7 @@ public class HierarchyBuilder
 
                     // Update the tree map with newly created nodes
                     for ( BasicNode intermediary : intermediaries ) {
-                        treeMap.put( intermediary.getId(), intermediary );
+                        idNodeMap.put( intermediary.getId(), intermediary );
                     }
                 }
                 else {
@@ -372,28 +369,36 @@ public class HierarchyBuilder
      * This method relies on the nodes' IDs being correctly formatted and allowing us to infer the parent-child relations.
      * </p>
      * 
-     * @param treeMap
-     *            tree map containing all nodes thus far (both real and artificial ones)
+     * @param idNodeMap
+     *            map containing all nodes thus far (both real and artificial ones)
      * @param childId
      *            id of the child node we're trying to find an ancestor for
      * @return the nearest node that can act as an ancestor, or null if not found
      */
-    private BasicNode findNearestAncestor( TreeMap<String, BasicNode> treeMap, String childId )
+    private BasicNode findNearestAncestor( Map<String, BasicNode> idNodeMap, String childId )
     {
-        String prevKey = childId;
+        // Work our way backwards from the given child id, ascending one level after each miss
+        String prevKey = getParentId( childId );
 
-        int size = treeMap.size();
+        int size = idNodeMap.size();
         for ( int i = 0; i < size; ++i ) {
-            String candidateKey = treeMap.lowerKey( prevKey );
-
-            if ( areIdsAncestorAndDescendant( candidateKey, childId ) ) {
-                return treeMap.get( candidateKey );
-            }
-
-            prevKey = candidateKey;
+            if ( idNodeMap.containsKey( prevKey ) )
+                return idNodeMap.get( prevKey );
+            else
+                prevKey = getParentId( prevKey );
         }
 
         return null;
+    }
+
+    /**
+     * @param id
+     *            the id to get the parent id for
+     * @return the id of the parent node for the specified id
+     */
+    private String getParentId( String id )
+    {
+        return id.substring( 0, id.lastIndexOf( Constants.HIERARCHY_BRANCH_SEPARATOR ) );
     }
 
     /**
