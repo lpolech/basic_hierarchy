@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
@@ -23,6 +24,14 @@ public class HierarchyBuilder
 
     private volatile int progress = 0;
     private volatile String statusMsg = "";
+
+    // Compiling under Java 7, can't use lambdas...
+    private Consumer<Integer> progressReporter = new Consumer<Integer>() {
+        public void accept( Integer p )
+        {
+            progress = p;
+        }
+    };
 
 
     /**
@@ -71,28 +80,19 @@ public class HierarchyBuilder
         }
 
         statusMsg = "Creating parent-child relations...";
-        createParentChildRelations( nodes );
+        createParentChildRelations( nodes, progressReporter );
 
         statusMsg = "Fixing depth gaps...";
-        nodes.addAll( fixDepthGaps( root, nodes, useSubtree ) );
+        nodes.addAll( fixDepthGaps( root, nodes, useSubtree, progressReporter ) );
 
         if ( fixBreadthGaps ) {
+            progress = -1;
             statusMsg = "Fixing breadth gaps...";
             nodes.addAll( fixBreadthGaps( root, useSubtree ) );
         }
 
         statusMsg = "Recalculating centroids...";
-        progress = 0;
-        long total = nodes.size();
-        long current = 0;
-        for ( BasicNode n : nodes ) {
-            Utils.checkInterruptStatus();
-
-            ++current;
-            progress = (int)( 100 * ( (double)current / total ) );
-
-            n.recalculateCentroid( useSubtree );
-        }
+        recalculateCentroids( nodes, useSubtree, progressReporter );
 
         statusMsg = "Sorting...";
         progress = 0;
@@ -100,6 +100,34 @@ public class HierarchyBuilder
         progress = 100;
 
         return nodes;
+    }
+
+    /**
+     * Recalculates centroids of all nodes in the list.
+     * 
+     * @param nodes
+     *            collection of all nodes for the centroids are to be recalculated
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances
+     * @param progressReporter
+     *            function used to report progress of this operation. Can be null.
+     */
+    public static void recalculateCentroids( List<BasicNode> nodes, boolean useSubtree, Consumer<Integer> progressReporter )
+    {
+        if ( progressReporter != null )
+            progressReporter.accept( 0 );
+        long total = nodes.size();
+        long current = 0;
+        for ( BasicNode n : nodes ) {
+            Utils.checkInterruptStatus();
+
+            ++current;
+            if ( progressReporter != null )
+                progressReporter.accept( (int)( 100 * ( (double)current / total ) ) );
+
+            n.recalculateCentroid( useSubtree );
+        }
+
     }
 
     /**
@@ -117,10 +145,13 @@ public class HierarchyBuilder
      * 
      * @param nodes
      *            collection of all nodes to build the hierarchy from
+     * @param progressReporter
+     *            function used to report progress of this operation. Can be null.
      */
-    private void createParentChildRelations( List<BasicNode> nodes )
+    public static void createParentChildRelations( List<BasicNode> nodes, Consumer<Integer> progressReporter )
     {
-        progress = 0;
+        if ( progressReporter != null )
+            progressReporter.accept( 0 );
 
         // Reset all previous relations first
         for ( BasicNode node : nodes ) {
@@ -132,7 +163,9 @@ public class HierarchyBuilder
         for ( int i = 0; i < total; ++i ) {
             Utils.checkInterruptStatus();
 
-            progress = (int)( 100 * ( (double)i / total ) );
+            if ( progressReporter != null )
+                progressReporter.accept( (int)( 100 * ( (double)i / total ) ) );
+
             BasicNode parent = nodes.get( i );
 
             for ( int j = 0; j < nodes.size(); ++j ) {
@@ -164,11 +197,15 @@ public class HierarchyBuilder
      *            the original collection of nodes
      * @param useSubtree
      *            whether the centroid calculation should also include child nodes' instances
+     * @param progressReporter
+     *            function used to report progress of this operation. Can be null.
      * @return collection of artificial nodes created as a result of this method
      */
-    public List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
+    public static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree, Consumer<Integer> progressReporter )
     {
-        progress = 0;
+        if ( progressReporter != null )
+            progressReporter.accept( 0 );
+
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
         Map<String, BasicNode> idNodeMap = new HashMap<>( nodes.size() );
@@ -180,7 +217,8 @@ public class HierarchyBuilder
         for ( int i = 0; i < total; ++i ) {
             Utils.checkInterruptStatus();
 
-            progress = (int)( 100 * ( (double)i / total ) );
+            if ( progressReporter != null )
+                progressReporter.accept( (int)( 100 * ( (double)i / total ) ) );
             BasicNode node = nodes.get( i );
 
             if ( node == root ) {
@@ -225,7 +263,7 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
+    public static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
     {
         List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
@@ -278,9 +316,8 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
+    public static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
     {
-        progress = -1;
         List<BasicNode> artificialNodes = new ArrayList<>();
 
         Queue<BasicNode> pendingNodes = new LinkedList<>();
@@ -312,7 +349,7 @@ public class HierarchyBuilder
      *            whether the centroid calculation should also include child nodes' instances
      * @return collection of artificial nodes created as a result of this method
      */
-    public List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
+    public static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
     {
         LinkedList<Node> children = node.getChildren();
         List<BasicNode> artificialNodes = new ArrayList<>();
@@ -375,7 +412,7 @@ public class HierarchyBuilder
      *            id of the child node we're trying to find an ancestor for
      * @return the nearest node that can act as an ancestor, or null if not found
      */
-    private BasicNode findNearestAncestor( Map<String, BasicNode> idNodeMap, String childId )
+    private static BasicNode findNearestAncestor( Map<String, BasicNode> idNodeMap, String childId )
     {
         // Work our way backwards from the given child id, ascending one level after each miss
         String prevKey = getParentId( childId );
@@ -396,7 +433,7 @@ public class HierarchyBuilder
      *            the id to get the parent id for
      * @return the id of the parent node for the specified id
      */
-    private String getParentId( String id )
+    private static String getParentId( String id )
     {
         return id.substring( 0, id.lastIndexOf( Constants.HIERARCHY_BRANCH_SEPARATOR ) );
     }

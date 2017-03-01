@@ -70,7 +70,7 @@ public class HierarchyBuilderTest
         // Creates:
         // - gen.0.0
         // - gen.0.0.11
-        List<BasicNode> artificial = new HierarchyBuilder().fixDepthGaps( root, nodes, false );
+        List<BasicNode> artificial = HierarchyBuilder.fixDepthGaps( root, nodes, false, null );
 
         // Assert that no unexpected nodes have been created
         Assert.assertEquals( 2, artificial.size() );
@@ -102,12 +102,10 @@ public class HierarchyBuilderTest
     {
         // Test that fixBreadthGaps algorithm works correctly.
 
-        HierarchyBuilder hb = new HierarchyBuilder();
-
         // Creates:
         // - gen.0.0
         // - gen.0.0.11
-        List<BasicNode> artificialDepth = hb.fixDepthGaps( root, nodes, false );
+        List<BasicNode> artificialDepth = HierarchyBuilder.fixDepthGaps( root, nodes, false, null );
 
         // Creates:
         // - gen.0.0.[0-9]
@@ -115,7 +113,7 @@ public class HierarchyBuilderTest
         // - gen.0.0.11.1
         // - gen.0.0.11.2
         // - gen.0.0.11.4
-        List<BasicNode> artificialBreadth = hb.fixBreadthGaps( root, false );
+        List<BasicNode> artificialBreadth = HierarchyBuilder.fixBreadthGaps( root, false );
 
         BasicNode artificial1 = findNodeWithId( artificialDepth, "gen.0.0.11" );
 
