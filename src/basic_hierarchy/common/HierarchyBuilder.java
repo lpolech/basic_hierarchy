@@ -512,9 +512,9 @@ public class HierarchyBuilder
      * Checks whether the two IDs represent nodes that are indirectly related (ancestor-descendant).
      * This method returns false if both IDs point to the same node.
      * 
-     * @param ancestorIds
+     * @param ancestorId
      *            ID of the node acting as ancestor
-     * @param descendantIds
+     * @param descendantId
      *            ID of the node acting as descendant
      * @return whether the two nodes are in a ancestor-descendant relationship.
      */
