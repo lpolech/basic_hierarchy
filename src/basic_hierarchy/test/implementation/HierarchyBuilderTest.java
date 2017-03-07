@@ -70,7 +70,7 @@ public class HierarchyBuilderTest
         // Creates:
         // - gen.0.0
         // - gen.0.0.11
-        List<BasicNode> artificial = HierarchyBuilder.fixDepthGaps( root, nodes, false, null );
+        List<BasicNode> artificial = HierarchyBuilder.fixDepthGaps( nodes, false, null );
 
         // Assert that no unexpected nodes have been created
         Assert.assertEquals( 2, artificial.size() );
@@ -105,7 +105,7 @@ public class HierarchyBuilderTest
         // Creates:
         // - gen.0.0
         // - gen.0.0.11
-        List<BasicNode> artificialDepth = HierarchyBuilder.fixDepthGaps( root, nodes, false, null );
+        List<BasicNode> artificialDepth = HierarchyBuilder.fixDepthGaps( nodes, false, null );
 
         // Creates:
         // - gen.0.0.[0-9]
