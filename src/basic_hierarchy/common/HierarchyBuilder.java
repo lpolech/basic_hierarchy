@@ -70,6 +70,10 @@ public class HierarchyBuilder
         BasicNode root, List<BasicNode> nodes,
         boolean fixBreadthGaps, boolean useSubtree )
     {
+        NodeIdComparator comparator = new NodeIdComparator();
+
+        Collections.sort( nodes, comparator );
+
         statusMsg = "";
         progress = 0;
 
@@ -96,7 +100,7 @@ public class HierarchyBuilder
 
         statusMsg = "Sorting...";
         progress = 0;
-        Collections.sort( nodes, new NodeIdComparator() );
+        Collections.sort( nodes, comparator );
         progress = 100;
 
         return nodes;
