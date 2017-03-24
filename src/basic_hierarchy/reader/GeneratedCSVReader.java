@@ -8,14 +8,16 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import basic_hierarchy.common.AlphanumComparator;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.common.NodeIdComparator;
-import basic_hierarchy.common.StringIdComparator;
+import basic_hierarchy.common.Utils;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
@@ -23,11 +25,17 @@ import basic_hierarchy.interfaces.DataReader;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Node;
 
+
 public class GeneratedCSVReader implements DataReader
 {
     private static final String REGEX_NODE_ID = "gen(" + Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX + "\\d+)+";
 
     private boolean assertOrder = false;
+
+    private HierarchyBuilder hb = null;
+
+    private volatile int progress = 0;
+    private volatile String statusMsg = "";
 
 
     public GeneratedCSVReader()
@@ -44,6 +52,23 @@ public class GeneratedCSVReader implements DataReader
     public GeneratedCSVReader( boolean assertOrder )
     {
         this.assertOrder = assertOrder;
+    }
+
+    /**
+     * @return value representing progress of reading the file, values [0, 100], or
+     *         negative for indeterminate operation.
+     */
+    public int getProgress()
+    {
+        return hb == null ? progress : hb.getProgress();
+    }
+
+    /**
+     * @return message describing the currently performed operation.
+     */
+    public String getStatusMessage()
+    {
+        return hb == null ? statusMsg : hb.getStatusMessage();
     }
 
     /**
@@ -72,6 +97,9 @@ public class GeneratedCSVReader implements DataReader
         boolean fixBreadthGaps,
         boolean useSubtree ) throws IOException
     {
+        statusMsg = "Parsing file...";
+        progress = 0;
+
         // REFACTOR: Could create a factory class to generate nodes.
         // REFACTOR: Skip nodes' elements containing "gen" prefix and assume that every ID prefix always begins with "gen"
         File inputFile = new File( filePath );
@@ -92,6 +120,9 @@ public class GeneratedCSVReader implements DataReader
 
         Reader reader = new InputStreamReader( new FileInputStream( filePath ), "UTF-8" );
 
+        final long bytesTotal = inputFile.length();
+        long bytesRead = 0;
+
         try ( BufferedReader br = new BufferedReader( reader ) ) {
             final int optionalColumns = boolToInt( withTrueClassAttribute ) + boolToInt( withInstancesNameAttribute );
             final int minimumColumnCount = 1 + optionalColumns;
@@ -99,6 +130,11 @@ public class GeneratedCSVReader implements DataReader
             int totalColumnCount = -1;
 
             for ( String inputLine; ( inputLine = br.readLine() ) != null; ) {
+                Utils.checkInterruptStatus();
+
+                bytesRead += inputLine.getBytes( "UTF-8" ).length;
+                progress = (int)( 100 * ( (double)bytesRead / bytesTotal ) );
+
                 String[] lineValues = inputLine.split( Constants.DELIMITER );
 
                 if ( dataColumnCount == -1 ) {
@@ -191,6 +227,9 @@ public class GeneratedCSVReader implements DataReader
             }
         }
 
+        hb = new HierarchyBuilder();
+        progress = 100;
+
         if ( assertOrder ) {
             List<BasicNode> t = new ArrayList<>( nodes );
             Collections.sort( t, new NodeIdComparator() );
@@ -199,12 +238,14 @@ public class GeneratedCSVReader implements DataReader
             }
         }
 
-        List<? extends Node> allNodes = HierarchyBuilder.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
+        List<? extends Node> allNodes = hb.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
 
         if ( root == null ) {
             // If root was missing from input file, then it must've been created artificially - find it.
             // List of nodes should be sorted by ID, therefore finding root should have negligible overhead.
             for ( Node node : allNodes ) {
+                Utils.checkInterruptStatus();
+
                 if ( node.getId().equalsIgnoreCase( Constants.ROOT_ID ) ) {
                     root = (BasicNode)node;
                     break;
@@ -306,17 +347,17 @@ public class GeneratedCSVReader implements DataReader
      */
     private static BasicNode findNodeWithId( List<BasicNode> nodes, String id )
     {
-        StringIdComparator c = new StringIdComparator();
-
         // Use binary search to find the node.
         int low = 0;
         int high = nodes.size() - 1;
+
+        Comparator<String> comparator = new AlphanumComparator();
 
         while ( low <= high ) {
             int mid = ( low + high ) >>> 1;
             BasicNode node = nodes.get( mid );
 
-            int r = c.compare( node.getId(), id );
+            int r = comparator.compare( node.getId(), id );
 
             if ( r < 0 )
                 low = mid + 1;

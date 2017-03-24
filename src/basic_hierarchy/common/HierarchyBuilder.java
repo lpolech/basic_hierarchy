@@ -3,9 +3,12 @@ package basic_hierarchy.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
@@ -17,419 +20,509 @@ import basic_hierarchy.interfaces.Node;
  */
 public class HierarchyBuilder
 {
-	private HierarchyBuilder()
-	{
-		// Static class -- disallow instantiation.
-		throw new RuntimeException( "Attempted to instantiate a static class: " + getClass().getName() );
-	}
+    private static char branchSeparator = Constants.HIERARCHY_BRANCH_SEPARATOR.charAt( 0 );
 
-	/**
-	 * Builds a complete hierarchy of nodes, while also patching up holes in the original hierarchy by inserting empty nodes
-	 * for missing IDs.
-	 * 
-	 * @param root
-	 *            the root node
-	 * @param nodes
-	 *            the original collection of nodes
-	 * @param fixBreadthGaps
-	 *            whether the hierarchy fixing algorithm should also fix gaps in breadth, not just depth.
-	 * @param useSubtree
-	 *            whether the centroid calculation should also include child nodes' instances.
-	 *            When set to {@code true}, all objects from subnodes are regarded as also belonging to their supernodes.
-	 * @return the complete 'fixed' collection of nodes, filled with artificial nodes
-	 */
-	public static List<? extends Node> buildCompleteHierarchy(
-		BasicNode root, List<BasicNode> nodes,
-		boolean fixBreadthGaps, boolean useSubtree )
-	{
-		if ( root == null ) {
-			// Root node was missing from input file - create it artificially.
-			root = new BasicNode( Constants.ROOT_ID, null, useSubtree );
-			nodes.add( 0, root );
-		}
+    private volatile int progress = 0;
+    private volatile String statusMsg = "";
 
-		createParentChildRelations( nodes );
+    // Compiling under Java 7, can't use lambdas...
+    private Consumer<Integer> progressReporter = new Consumer<Integer>() {
+        public void accept( Integer p )
+        {
+            progress = p;
+        }
+    };
 
-		nodes.addAll( fixDepthGaps( root, nodes, useSubtree ) );
 
-		if ( fixBreadthGaps ) {
-			nodes.addAll( fixBreadthGaps( root, useSubtree ) );
-		}
+    /**
+     * @return value representing progress of current operation, values [0, 100], or
+     *         negative for indeterminate operation.
+     */
+    public int getProgress()
+    {
+        return progress;
+    }
 
-		for ( BasicNode n : nodes ) {
-			n.recalculateCentroid( useSubtree );
-		}
+    /**
+     * @return message describing the currently performed operation.
+     */
+    public String getStatusMessage()
+    {
+        return statusMsg;
+    }
 
-		Collections.sort( nodes, new NodeIdComparator() );
+    /**
+     * Builds a complete hierarchy of nodes, while also patching up holes in the original hierarchy by inserting empty nodes
+     * for missing IDs.
+     * 
+     * @param root
+     *            the root node
+     * @param nodes
+     *            the original collection of nodes
+     * @param fixBreadthGaps
+     *            whether the hierarchy fixing algorithm should also fix gaps in breadth, not just depth.
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances.
+     *            When set to {@code true}, all objects from subnodes are regarded as also belonging to their supernodes.
+     * @return the complete 'fixed' collection of nodes, filled with artificial nodes
+     */
+    public List<? extends Node> buildCompleteHierarchy(
+        BasicNode root, List<BasicNode> nodes,
+        boolean fixBreadthGaps, boolean useSubtree )
+    {
+        NodeIdComparator comparator = new NodeIdComparator();
 
-		return nodes;
-	}
+        Collections.sort( nodes, comparator );
 
-	/**
-	 * Updates all nodes in the specified collection so that their actual parent-child relations match
-	 * up with their IDs.
-	 * <p>
-	 * If a node's ID implies it has a parent, but that parent is not present in the collection, then
-	 * that node will not have its parent set.
-	 * </p>
-	 * <p>
-	 * This means that this method DOES NOT GUARANTEE that the hierarchy it creates will be contiguous.
-	 * To fix this, follow-up this method with {@link #fixDepthGaps(BasicNode, List, boolean)} and/or
-	 * {@link #fixBreadthGaps(BasicNode, boolean)}
-	 * </p>
-	 * 
-	 * @param nodes
-	 *            collection of all nodes to build the hierarchy from
-	 */
-	private static void createParentChildRelations( List<BasicNode> nodes )
-	{
-		// Reset all previous relations first
-		for ( BasicNode node : nodes ) {
-			node.setChildren( new LinkedList<Node>() );
-			node.setParent( null );
-		}
+        statusMsg = "";
+        progress = 0;
 
-		for ( int i = 0; i < nodes.size(); ++i ) {
-			BasicNode parent = nodes.get( i );
-			String[] parentBranchIds = getNodeIdSegments( parent );
+        if ( root == null ) {
+            // Root node was missing from input file - create it artificially.
+            root = new BasicNode( Constants.ROOT_ID, null, useSubtree );
+            nodes.add( 0, root );
+        }
 
-			for ( int j = 0; j < nodes.size(); ++j ) {
-				if ( i == j ) {
-					// Can't become a parent unto itself.
-					continue;
-				}
+        statusMsg = "Creating parent-child relations...";
+        createParentChildRelations( nodes, progressReporter );
 
-				BasicNode child = nodes.get( j );
-				String[] childBranchIds = getNodeIdSegments( child );
+        statusMsg = "Fixing depth gaps...";
+        nodes.addAll( fixDepthGaps( nodes, useSubtree, progressReporter ) );
 
-				if ( areIdsParentAndChild( parentBranchIds, childBranchIds ) ) {
-					child.setParent( parent );
-					parent.addChild( child );
-				}
-			}
-		}
-	}
+        if ( fixBreadthGaps ) {
+            progress = -1;
+            statusMsg = "Fixing breadth gaps...";
+            nodes.addAll( fixBreadthGaps( root, useSubtree ) );
+        }
 
-	/**
-	 * Fixes gaps in depth (missing ancestors) by creating empty nodes where needed.
-	 * <p>
-	 * Such gaps appear when the source file did not list these nodes (since they were empty),
-	 * but their existence can be inferred from IDs of existing nodes.
-	 * </p>
-	 * 
-	 * @param root
-	 *            the root node
-	 * @param nodes
-	 *            the original collection of nodes
-	 * @param useSubtree
-	 *            whether the centroid calculation should also include child nodes' instances
-	 * @return collection of artificial nodes created as a result of this method
-	 */
-	public static List<BasicNode> fixDepthGaps( BasicNode root, List<BasicNode> nodes, boolean useSubtree )
-	{
-		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
+        statusMsg = "Recalculating centroids...";
+        recalculateCentroids( nodes, useSubtree, progressReporter );
 
-		for ( int i = 0; i < nodes.size(); ++i ) {
-			BasicNode node = nodes.get( i );
+        statusMsg = "Sorting...";
+        progress = 0;
+        Collections.sort( nodes, comparator );
+        progress = 100;
 
-			if ( node == root ) {
-				// Don't consider the root node.
-				continue;
-			}
+        return nodes;
+    }
 
-			if ( node.getParent() == null ) {
-				String[] nodeBranchIds = getNodeIdSegments( node );
+    /**
+     * Recalculates centroids of all nodes in the list.
+     * 
+     * @param nodes
+     *            collection of all nodes for the centroids are to be recalculated
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances
+     * @param progressReporter
+     *            function used to report progress of this operation. Can be null.
+     */
+    public static void recalculateCentroids( List<BasicNode> nodes, boolean useSubtree, Consumer<Integer> progressReporter )
+    {
+        if ( progressReporter != null )
+            progressReporter.accept( 0 );
+        long total = nodes.size();
+        long current = 0;
+        for ( BasicNode n : nodes ) {
+            Utils.checkInterruptStatus();
 
-				BasicNode nearestAncestor = null;
-				int candidateHeight = -1;
+            ++current;
+            if ( progressReporter != null )
+                progressReporter.accept( (int)( 100 * ( (double)current / total ) ) );
 
-				// Try to find nearest parent in 'real' nodes
-				BasicNode candidate = findNearestAncestor( nodes, nodeBranchIds, -1, i );
-				if ( candidate != null ) {
-					nearestAncestor = candidate;
-					candidateHeight = getNodeIdSegments( candidate ).length;
-				}
+            n.recalculateCentroid( useSubtree );
+        }
 
-				// Try to find nearest parent in artificial nodes
-				candidate = findNearestAncestor( artificialNodes, nodeBranchIds, candidateHeight );
-				if ( candidate != null ) {
-					nearestAncestor = candidate;
-				}
+    }
 
-				if ( nearestAncestor != null ) {
-					artificialNodes.addAll( fixDepthGapsBetween( nearestAncestor, node, useSubtree ) );
-				}
-				else {
-					throw new RuntimeException(
-						String.format(
-							"Could not find nearest parent for '%s'. This means that something went seriously wrong.",
-							node.getId()
-						)
-					);
-				}
-			}
-		}
+    /**
+     * Updates all nodes in the specified collection so that their actual parent-child relations match
+     * up with their IDs.
+     * <p>
+     * If a node's ID implies it has a parent, but that parent is not present in the collection, then
+     * that node will not have its parent set.
+     * </p>
+     * <p>
+     * This means that this method DOES NOT GUARANTEE that the hierarchy it creates will be contiguous.
+     * To fix this, follow-up this method with {@link #fixDepthGaps(BasicNode, List, boolean)} and/or
+     * {@link #fixBreadthGaps(BasicNode, boolean)}
+     * </p>
+     * 
+     * @param nodes
+     *            collection of all nodes to build the hierarchy from
+     * @param progressReporter
+     *            function used to report progress of this operation. Can be null.
+     */
+    public static void createParentChildRelations( List<BasicNode> nodes, Consumer<Integer> progressReporter )
+    {
+        if ( progressReporter != null )
+            progressReporter.accept( 0 );
 
-		return artificialNodes;
-	}
+        // Reset all previous relations first
+        for ( BasicNode node : nodes ) {
+            node.setChildren( new LinkedList<Node>() );
+            node.setParent( null );
+        }
 
-	/**
-	 * Fixes depth gaps between the specified ancestor and descendant nodes only.
-	 * 
-	 * @param ancestor
-	 *            the nearest ancestor node that already exists within the hierarchy
-	 * @param descendant
-	 *            the descendant node we want to create parents for
-	 * @param useSubtree
-	 *            whether the centroid calculation should also include child nodes' instances
-	 * @return collection of artificial nodes created as a result of this method
-	 */
-	public static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
-	{
-		List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
+        long total = nodes.size();
+        for ( int i = 0; i < total; ++i ) {
+            Utils.checkInterruptStatus();
 
-		String[] descendantBranchIds = getNodeIdSegments( descendant );
-		int ancestorHeight = getNodeIdSegments( ancestor ).length;
+            if ( progressReporter != null )
+                progressReporter.accept( (int)( 100 * ( (double)i / total ) ) );
 
-		BasicNode newParent = ancestor;
-		for ( int j = ancestorHeight; j < descendantBranchIds.length - 1; ++j ) {
-			String newId = newParent.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + descendantBranchIds[j];
+            BasicNode parent = nodes.get( i );
 
-			// Add an empty node
-			BasicNode newNode = new BasicNode(
-				newId, newParent, useSubtree
-			);
+            for ( int j = 0; j < nodes.size(); ++j ) {
+                if ( i == j ) {
+                    // Can't become a parent unto itself.
+                    continue;
+                }
 
-			// Create proper parent-child relations
-			newParent.addChild( newNode );
-			newNode.setParent( newParent );
+                BasicNode child = nodes.get( j );
 
-			artificialNodes.add( newNode );
+                if ( areIdsParentAndChild( parent.getId(), child.getId() ) ) {
+                    child.setParent( parent );
+                    parent.addChild( child );
+                }
+            }
+        }
+    }
 
-			newParent = newNode;
-		}
+    /**
+     * Fixes gaps in depth (missing ancestors) by creating empty nodes where needed.
+     * <p>
+     * Such gaps appear when the source file did not list these nodes (since they were empty),
+     * but their existence can be inferred from IDs of existing nodes.
+     * </p>
+     * 
+     * @param nodes
+     *            the original collection of nodes
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances
+     * @param progressReporter
+     *            function used to report progress of this operation. Can be null.
+     * @return collection of artificial nodes created as a result of this method
+     */
+    public static List<BasicNode> fixDepthGaps( List<BasicNode> nodes, boolean useSubtree, Consumer<Integer> progressReporter )
+    {
+        if ( progressReporter != null )
+            progressReporter.accept( 0 );
 
-		// Add missing links
-		newParent.addChild( descendant );
-		descendant.setParent( newParent );
+        List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
-		return artificialNodes;
-	}
+        Map<String, BasicNode> idNodeMap = new HashMap<>( nodes.size() );
+        for ( BasicNode node : nodes ) {
+            idNodeMap.put( node.getId(), node );
+        }
 
-	/**
-	 * Fixes gaps in breadth (missing siblings) by creating empty nodes where needed.
-	 * <p>
-	 * Such gaps appear when the source file did not list these nodes (since they were empty),
-	 * but their existence can be inferred from IDs of existing nodes.
-	 * </p>
-	 * 
-	 * @param root
-	 *            the root node
-	 * @param useSubtree
-	 *            whether the centroid calculation should also include child nodes' instances
-	 * @return collection of artificial nodes created as a result of this method
-	 */
-	public static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
-	{
-		List<BasicNode> artificialNodes = new ArrayList<>();
+        long total = nodes.size();
+        for ( int i = 0; i < total; ++i ) {
+            Utils.checkInterruptStatus();
 
-		Queue<BasicNode> pendingNodes = new LinkedList<>();
-		pendingNodes.add( root );
+            if ( progressReporter != null )
+                progressReporter.accept( (int)( 100 * ( (double)i / total ) ) );
+            BasicNode node = nodes.get( i );
 
-		while ( !pendingNodes.isEmpty() ) {
-			BasicNode current = pendingNodes.remove();
+            if ( node.getId().equals( Constants.ROOT_ID ) ) {
+                // Don't consider the root node.
+                continue;
+            }
 
-			// Enqueue child nodes for processing ahead of time, so that we don't
-			// have to differentiate between real and artificial nodes later.
-			for ( Node child : current.getChildren() ) {
-				pendingNodes.add( (BasicNode)child );
-			}
+            if ( node.getParent() == null ) {
+                BasicNode nearestAncestor = findNearestAncestor( idNodeMap, node.getId() );
 
-			artificialNodes.addAll( fixBreadthGapsInNode( current, useSubtree ) );
-		}
+                if ( nearestAncestor != null ) {
+                    List<BasicNode> intermediaries = fixDepthGapsBetween( nearestAncestor, node, useSubtree );
+                    artificialNodes.addAll( intermediaries );
 
-		return artificialNodes;
-	}
+                    // Update the tree map with newly created nodes
+                    for ( BasicNode intermediary : intermediaries ) {
+                        idNodeMap.put( intermediary.getId(), intermediary );
+                    }
+                }
+                else {
+                    throw new RuntimeException(
+                        String.format(
+                            "Could not find nearest parent for '%s'. This means that something went seriously wrong.",
+                            node.getId()
+                        )
+                    );
+                }
+            }
+        }
 
-	/**
-	 * Fixes gaps in breadth just in the specified node.
-	 * 
-	 * @param node
-	 *            the node to fix breadth gaps in
-	 * @param useSubtree
-	 *            whether the centroid calculation should also include child nodes' instances
-	 * @return collection of artificial nodes created as a result of this method
-	 */
-	public static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
-	{
-		LinkedList<Node> children = node.getChildren();
-		List<BasicNode> artificialNodes = new ArrayList<>();
+        return artificialNodes;
+    }
 
-		// Make sure children are sorted so that we can detect gaps.
-		Collections.sort( children, new NodeIdComparator() );
+    /**
+     * Fixes depth gaps between the specified ancestor and descendant nodes only.
+     * 
+     * @param ancestor
+     *            the nearest ancestor node that already exists within the hierarchy
+     * @param descendant
+     *            the descendant node we want to create parents for
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances
+     * @return collection of artificial nodes created as a result of this method
+     */
+    public static List<BasicNode> fixDepthGapsBetween( BasicNode ancestor, BasicNode descendant, boolean useSubtree )
+    {
+        List<BasicNode> artificialNodes = new ArrayList<BasicNode>();
 
-		for ( int i = 0; i < children.size(); ++i ) {
-			Node child = children.get( i );
+        int descendantHeight = getNodeHeight( descendant );
+        int ancestorHeight = getNodeHeight( ancestor );
 
-			String[] ids = getNodeIdSegments( child );
-			if ( ids[ids.length - 1].equals( Integer.toString( i ) ) ) {
-				// Assert that the existing nodes have correct relationships.
-				if ( !areNodesAncestorAndDescendant( node, child ) ) {
-					throw new RuntimeException(
-						String.format(
-							"Fatal error while filling breadth gaps! '%s' IS NOT an ancestor of '%s', " +
-								"but '%s' IS a child of '%s'!",
-							node.getId(), child.getId(), child.getId(), node.getId()
-						)
-					);
-				}
-			}
-			else {
-				// i-th node's id isn't equal to i - there's a gap. Fix it.
-				String newId = node.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + i;
-				BasicNode newNode = new BasicNode( newId, node, useSubtree );
-				newNode.setParent( node );
+        String rest = descendant.getId().substring( ancestor.getId().length() + 1 );
 
-				// Insert the new node at the current index.
-				// Don't enqueue the new node, since it has no children anyway
-				// During the next iteration of the loop, we will process the same node again,
-				// so that further gaps will be detected
-				children.add( i, newNode );
-				artificialNodes.add( newNode );
-			}
-		}
+        BasicNode newParent = ancestor;
+        int prevIdx = 0;
+        for ( int j = ancestorHeight; j < descendantHeight - 1; ++j ) {
+            // Find the range that we need to read
+            int idx = rest.indexOf( Constants.HIERARCHY_BRANCH_SEPARATOR, prevIdx );
+            String part = rest.substring( prevIdx, idx );
+            String newId = newParent.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + part;
+            // Remove the part we've parsed.
+            prevIdx = idx + 1;
 
-		// Children were inserted at correct indices, no need to sort again.
-		// Set the list of children of the current node, in case implementation of getChildren()
-		// is changed to return a copy, and not the collection itself.
-		node.setChildren( children );
+            // Add an empty node
+            BasicNode newNode = new BasicNode(
+                newId, newParent, useSubtree
+            );
 
-		return artificialNodes;
-	}
+            // Create proper parent-child relations
+            newParent.addChild( newNode );
+            newNode.setParent( newParent );
 
-	/**
-	 * {@link #findNearestAncestor(List, String[], int, int)}
-	 */
-	private static BasicNode findNearestAncestor( List<BasicNode> nodes, String[] childBranchIds, int nearestHeight )
-	{
-		return findNearestAncestor( nodes, childBranchIds, nearestHeight, -1 );
-	}
+            artificialNodes.add( newNode );
 
-	/**
-	 * Attempts to find the nearest existing node that can act as an ancestor to the node specified in argument. IF no such
-	 * node could be found, this method returns null.
-	 * <p>
-	 * This method relies on the nodes' IDs being correctly formatted and allowing us to infer the parent-child relations.
-	 * </p>
-	 * 
-	 * @param nodes
-	 *            list of nodes to search in
-	 * @param childBranchIds
-	 *            ID segments of the node for which we're trying to find an ancestor
-	 * @param nearestHeight
-	 *            number of segments of the best candidate we have available currently (can be negative to mean 'none')
-	 * @param maxIndex
-	 *            max index to search to in the list of nodes, for bounding purposes (can be negative to perform an unbounded search)
-	 * @return the nearest node that can act as an ancestor, or null if not found
-	 */
-	private static BasicNode findNearestAncestor( List<BasicNode> nodes, String[] childBranchIds, int nearestHeight, int maxIndex )
-	{
-		if ( maxIndex < 0 ) {
-			maxIndex = nodes.size();
-		}
+            newParent = newNode;
+        }
 
-		BasicNode result = null;
+        // Add missing links
+        newParent.addChild( descendant );
+        descendant.setParent( newParent );
 
-		for ( int i = 0; i < maxIndex; ++i ) {
-			BasicNode parent = nodes.get( i );
-			String[] parentBranchIds = getNodeIdSegments( parent );
+        return artificialNodes;
+    }
 
-			if ( parentBranchIds.length > nearestHeight ) {
-				if ( areIdsAncestorAndDescendant( parentBranchIds, childBranchIds ) ) {
-					result = parent;
-					nearestHeight = parentBranchIds.length;
-				}
-			}
-		}
+    /**
+     * Fixes gaps in breadth (missing siblings) by creating empty nodes where needed.
+     * <p>
+     * Such gaps appear when the source file did not list these nodes (since they were empty),
+     * but their existence can be inferred from IDs of existing nodes.
+     * </p>
+     * 
+     * @param root
+     *            the root node
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances
+     * @return collection of artificial nodes created as a result of this method
+     */
+    public static List<BasicNode> fixBreadthGaps( BasicNode root, boolean useSubtree )
+    {
+        List<BasicNode> artificialNodes = new ArrayList<>();
 
-		return result;
-	}
+        Queue<BasicNode> pendingNodes = new LinkedList<>();
+        pendingNodes.add( root );
 
-	/**
-	 * Convenience method to split a node's IDs into segments for easier processing.
-	 */
-	private static String[] getNodeIdSegments( Node n )
-	{
-		String[] result = n.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
-		// Ignore the first index ('gen')
-		return Arrays.copyOfRange( result, 1, result.length );
-	}
+        while ( !pendingNodes.isEmpty() ) {
+            Utils.checkInterruptStatus();
 
-	/**
-	 * {@link #areIdsParentAndChild(String[], String[])}
-	 */
-	private static boolean areNodesParentAndChild( Node parent, Node child )
-	{
-		return areIdsParentAndChild(
-			getNodeIdSegments( parent ),
-			getNodeIdSegments( child )
-		);
-	}
+            BasicNode current = pendingNodes.remove();
 
-	/**
-	 * {@link #areIdsAncestorAndDescendant(String[], String[])}
-	 */
-	private static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
-	{
-		return areIdsAncestorAndDescendant(
-			getNodeIdSegments( ancestor ),
-			getNodeIdSegments( descendant )
-		);
-	}
+            // Enqueue child nodes for processing ahead of time, so that we don't
+            // have to differentiate between real and artificial nodes later.
+            for ( Node child : current.getChildren() ) {
+                pendingNodes.add( (BasicNode)child );
+            }
 
-	/**
-	 * Checks whether the two IDs represent nodes that are directly related (parent-child).
-	 * This method returns false if both IDs point to the same node.
-	 * 
-	 * @param parentIds
-	 *            ID segments of the node acting as parent
-	 * @param childIds
-	 *            ID segments of the node acting as child
-	 * @return whether the two nodes are in a direct parent-child relationship.
-	 */
-	private static boolean areIdsParentAndChild( String[] parentIds, String[] childIds )
-	{
-		// Check that the child is exactly one level 'deeper' than the parent, and then
-		// compare the node IDs to verify that they are related.
-		return ( parentIds.length + 1 == childIds.length ) &&
-			areIdsAncestorAndDescendant( parentIds, childIds );
-	}
+            artificialNodes.addAll( fixBreadthGapsInNode( current, useSubtree ) );
+        }
 
-	/**
-	 * Checks whether the two IDs represent nodes that are indirectly related (ancestor-descendant).
-	 * This method returns false if both IDs point to the same node.
-	 * 
-	 * @param ancestorIds
-	 *            ID segments of the node acting as ancestor
-	 * @param descendantIds
-	 *            ID segments of the node acting as descendant
-	 * @return whether the two nodes are in a ancestor-descendant relationship.
-	 */
-	private static boolean areIdsAncestorAndDescendant( String[] ancestorIds, String[] descendantIds )
-	{
-		if ( ancestorIds.length < descendantIds.length ) {
-			for ( int i = 0; i < ancestorIds.length; ++i ) {
-				if ( !ancestorIds[i].equals( descendantIds[i] ) ) {
-					return false;
-				}
-			}
+        return artificialNodes;
+    }
 
-			return true;
-		}
-		else {
-			// 'ancestor' ID has more segments than 'descendant', which means there's no way
-			// it can be an ancestor to the other node.
-			return false;
-		}
-	}
+    /**
+     * Fixes gaps in breadth just in the specified node.
+     * 
+     * @param node
+     *            the node to fix breadth gaps in
+     * @param useSubtree
+     *            whether the centroid calculation should also include child nodes' instances
+     * @return collection of artificial nodes created as a result of this method
+     */
+    public static List<BasicNode> fixBreadthGapsInNode( BasicNode node, boolean useSubtree )
+    {
+        LinkedList<Node> children = node.getChildren();
+        List<BasicNode> artificialNodes = new ArrayList<>();
+
+        // Make sure children are sorted so that we can detect gaps.
+        Collections.sort( children, new NodeIdComparator() );
+
+        for ( int i = 0; i < children.size(); ++i ) {
+            Node child = children.get( i );
+
+            String id = child.getId();
+            int idx = id.lastIndexOf( Constants.HIERARCHY_BRANCH_SEPARATOR );
+            String lastSegment = id.substring( idx + 1 );
+
+            if ( lastSegment.equals( Integer.toString( i ) ) ) {
+                // Assert that the existing nodes have correct relationships.
+                if ( !areNodesAncestorAndDescendant( node, child ) ) {
+                    throw new RuntimeException(
+                        String.format(
+                            "Fatal error while filling breadth gaps! '%s' IS NOT an ancestor of '%s', " +
+                                "but '%s' IS a child of '%s'!",
+                            node.getId(), child.getId(), child.getId(), node.getId()
+                        )
+                    );
+                }
+            }
+            else {
+                // i-th node's id isn't equal to i - there's a gap. Fix it.
+                String newId = node.getId() + Constants.HIERARCHY_BRANCH_SEPARATOR + i;
+                BasicNode newNode = new BasicNode( newId, node, useSubtree );
+                newNode.setParent( node );
+
+                // Insert the new node at the current index.
+                // Don't enqueue the new node, since it has no children anyway
+                // During the next iteration of the loop, we will process the same node again,
+                // so that further gaps will be detected
+                children.add( i, newNode );
+                artificialNodes.add( newNode );
+            }
+        }
+
+        // Children were inserted at correct indices, no need to sort again.
+        // Set the list of children of the current node, in case implementation of getChildren()
+        // is changed to return a copy, and not the collection itself.
+        node.setChildren( children );
+
+        return artificialNodes;
+    }
+
+    /**
+     * Attempts to find the nearest existing node that can act as an ancestor to the node specified in argument. IF no such
+     * node could be found, this method returns null.
+     * <p>
+     * This method relies on the nodes' IDs being correctly formatted and allowing us to infer the parent-child relations.
+     * </p>
+     * 
+     * @param idNodeMap
+     *            map containing all nodes thus far (both real and artificial ones)
+     * @param childId
+     *            id of the child node we're trying to find an ancestor for
+     * @return the nearest node that can act as an ancestor, or null if not found
+     */
+    private static BasicNode findNearestAncestor( Map<String, BasicNode> idNodeMap, String childId )
+    {
+        // Work our way backwards from the given child id, ascending one level after each miss
+        String prevKey = getParentId( childId );
+
+        int size = idNodeMap.size();
+        for ( int i = 0; i < size; ++i ) {
+            if ( idNodeMap.containsKey( prevKey ) )
+                return idNodeMap.get( prevKey );
+            else
+                prevKey = getParentId( prevKey );
+        }
+
+        return null;
+    }
+
+    /**
+     * @param id
+     *            the id to get the parent id for
+     * @return the id of the parent node for the specified id
+     */
+    private static String getParentId( String id )
+    {
+        return id.substring( 0, id.lastIndexOf( Constants.HIERARCHY_BRANCH_SEPARATOR ) );
+    }
+
+    /**
+     * @param n
+     *            the node to compute the node height for
+     * 
+     * @return height of the node (how deep it is within the tree). 1 means root node.
+     */
+    public static int getNodeHeight( Node n )
+    {
+        return getIdHeight( n.getId() );
+    }
+
+    /**
+     * @param id
+     *            the id to compute the node height for
+     * 
+     * @return height of the node (how deep it is within the tree). 1 means root node.
+     */
+    public static int getIdHeight( String id )
+    {
+        return id.length() - id.replace( Constants.HIERARCHY_BRANCH_SEPARATOR, "" ).length();
+    }
+
+    /**
+     * Convenience method to split a node's IDs into segments for easier processing.
+     */
+    public static String[] getNodeIdSegments( Node n )
+    {
+        String[] result = n.getId().split( Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX );
+        // Ignore the first index ('gen')
+        return Arrays.copyOfRange( result, 1, result.length );
+    }
+
+    /**
+     * {@link #areIdsParentAndChild(String, String)}
+     */
+    public static boolean areNodesParentAndChild( Node parent, Node child )
+    {
+        return areIdsParentAndChild(
+            parent.getId(),
+            child.getId()
+        );
+    }
+
+    /**
+     * {@link #areIdsAncestorAndDescendant(String, String)}
+     */
+    public static boolean areNodesAncestorAndDescendant( Node ancestor, Node descendant )
+    {
+        return areIdsAncestorAndDescendant(
+            ancestor.getId(),
+            descendant.getId()
+        );
+    }
+
+    /**
+     * Checks whether the two IDs represent nodes that are directly related (parent-child).
+     * This method returns false if both IDs point to the same node.
+     * 
+     * @param parentId
+     *            ID of the node acting as parent
+     * @param childId
+     *            ID of the node acting as child
+     * @return whether the two nodes are in a direct parent-child relationship.
+     */
+    public static boolean areIdsParentAndChild( String parentId, String childId )
+    {
+        return areIdsAncestorAndDescendant( parentId, childId ) &&
+            childId.substring( parentId.length() + 1 ).indexOf( Constants.HIERARCHY_BRANCH_SEPARATOR ) == -1;
+    }
+
+    /**
+     * Checks whether the two IDs represent nodes that are indirectly related (ancestor-descendant).
+     * This method returns false if both IDs point to the same node.
+     * 
+     * @param ancestorId
+     *            ID of the node acting as ancestor
+     * @param descendantId
+     *            ID of the node acting as descendant
+     * @return whether the two nodes are in a ancestor-descendant relationship.
+     */
+    public static boolean areIdsAncestorAndDescendant( String ancestorId, String descendantId )
+    {
+        return !ancestorId.equals( descendantId ) && descendantId.startsWith( ancestorId ) &&
+            descendantId.charAt( ancestorId.length() ) == branchSeparator;
+    }
 }

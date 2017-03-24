@@ -6,27 +6,21 @@ import basic_hierarchy.interfaces.Node;
 
 
 /**
- * Compares two nodes.
- * <p>
- * Implementation compares the two nodes' IDs using {@linkplain StringIdComparator}.
- * </p>
+ * Compares two nodes by comparing their ids.
  */
 public class NodeIdComparator implements Comparator<Node>
 {
-	private StringIdComparator idComparator = new StringIdComparator();
+    private Comparator<String> idComparator = new AlphanumComparator();
 
 
-	/**
-	 * Note: this comparator imposes orderings that are <b>inconsistent with {@code equals}</b>.
-	 * 
-	 * @see Comparator#compare(Object, Object)
-	 */
-	@Override
-	public int compare( Node o1, Node o2 )
-	{
-		String o1Id = o1.getId();
-		String o2Id = o2.getId();
-
-		return idComparator.compare( o1Id, o2Id );
-	}
+    /**
+     * Note: this comparator imposes orderings that are <b>inconsistent with {@code equals}</b>.
+     * 
+     * @see Comparator#compare(Object, Object)
+     */
+    @Override
+    public int compare( Node o1, Node o2 )
+    {
+        return idComparator.compare( o1.getId(), o2.getId() );
+    }
 }
