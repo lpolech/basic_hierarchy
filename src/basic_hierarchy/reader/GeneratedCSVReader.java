@@ -7,16 +7,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import basic_hierarchy.common.AlphanumComparator;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
-import basic_hierarchy.common.NodeIdComparator;
 import basic_hierarchy.common.Utils;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
@@ -30,8 +28,6 @@ public class GeneratedCSVReader implements DataReader
 {
     private static final String REGEX_NODE_ID = "gen(" + Constants.HIERARCHY_BRANCH_SEPARATOR_REGEX + "\\d+)+";
 
-    private boolean assertOrder = false;
-
     private HierarchyBuilder hb = null;
 
     private volatile int progress = 0;
@@ -40,18 +36,6 @@ public class GeneratedCSVReader implements DataReader
 
     public GeneratedCSVReader()
     {
-        this( true );
-    }
-
-    /**
-     * @param assertOrder
-     *            if true, at the end of loading the reader will assert that rows in the
-     *            input file were sorted in ascending order (by the assigned class column).
-     *            If the rows were not sorted, then instances will be assigned to incorrect nodes.
-     */
-    public GeneratedCSVReader( boolean assertOrder )
-    {
-        this.assertOrder = assertOrder;
     }
 
     /**
@@ -113,8 +97,8 @@ public class GeneratedCSVReader implements DataReader
         }
 
         BasicNode root = null;
-        ArrayList<BasicNode> nodes = new ArrayList<BasicNode>();
         String[] dataNames = null;
+        Map<String, BasicNode> nodeMap = new TreeMap<String, BasicNode>( new AlphanumComparator() );
         HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
         int overallNumberOfInstances = 0;
 
@@ -211,11 +195,11 @@ public class GeneratedCSVReader implements DataReader
 
                 double[] values = parseInstanceFeatures( inputLine, lineValues, dataColumnCount, minimumColumnCount );
 
-                BasicNode node = findNodeWithId( nodes, assignedClassAttr );
+                BasicNode node = getOrDefault( nodeMap, assignedClassAttr, null );
                 if ( node == null ) {
                     // Node for this id doesn't exist yet. Create it.
                     node = new BasicNode( assignedClassAttr, null, useSubtree );
-                    nodes.add( node );
+                    nodeMap.put( assignedClassAttr, node );
                 }
 
                 node.addInstance( new BasicInstance( instanceNameAttr, node.getId(), values, trueClassAttr ) );
@@ -230,14 +214,7 @@ public class GeneratedCSVReader implements DataReader
         hb = new HierarchyBuilder();
         progress = 100;
 
-        if ( assertOrder ) {
-            List<BasicNode> t = new ArrayList<>( nodes );
-            Collections.sort( t, new NodeIdComparator() );
-            if ( !t.equals( nodes ) ) {
-                throw new RuntimeException( "Nodes in input file were not listed in ascending order." );
-            }
-        }
-
+        ArrayList<BasicNode> nodes = new ArrayList<BasicNode>( nodeMap.values() );
         List<? extends Node> allNodes = hb.buildCompleteHierarchy( root, nodes, fixBreadthGaps, useSubtree );
 
         if ( root == null ) {
@@ -334,39 +311,5 @@ public class GeneratedCSVReader implements DataReader
         }
 
         return values;
-    }
-
-    /**
-     * Searches the specified list looking for a node with the specified id.
-     * 
-     * @param nodes
-     *            the list to search in
-     * @param id
-     *            the id to look for
-     * @return the node with the specified id, or null if not found
-     */
-    private static BasicNode findNodeWithId( List<BasicNode> nodes, String id )
-    {
-        // Use binary search to find the node.
-        int low = 0;
-        int high = nodes.size() - 1;
-
-        Comparator<String> comparator = new AlphanumComparator();
-
-        while ( low <= high ) {
-            int mid = ( low + high ) >>> 1;
-            BasicNode node = nodes.get( mid );
-
-            int r = comparator.compare( node.getId(), id );
-
-            if ( r < 0 )
-                low = mid + 1;
-            else if ( r > 0 )
-                high = mid - 1;
-            else
-                return node;
-        }
-
-        return null;
     }
 }
