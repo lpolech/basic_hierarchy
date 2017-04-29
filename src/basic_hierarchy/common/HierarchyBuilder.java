@@ -3,6 +3,7 @@ package basic_hierarchy.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -100,10 +101,41 @@ public class HierarchyBuilder
 
         statusMsg = "Sorting...";
         progress = 0;
+
         Collections.sort( nodes, comparator );
+        sortAllChildren( root );
+
         progress = 100;
 
         return nodes;
+    }
+
+    /**
+     * Recursively sorts all children of the specified node using {@link NodeIdComparator}
+     * 
+     * @param root
+     *            the node to sort
+     */
+    public static void sortAllChildren( Node root )
+    {
+        NodeIdComparator comparator = new NodeIdComparator();
+        sortAllChildren( root, comparator );
+    }
+
+    /**
+     * Recursively sorts all children of the specified node using the specified comparator.
+     * 
+     * @param node
+     *            the node whose children are to be sorted
+     * @param comparator
+     *            the comparator to use to sort the children
+     */
+    public static void sortAllChildren( Node node, Comparator<Node> comparator )
+    {
+        Collections.sort( node.getChildren(), comparator );
+        for ( Node n : node.getChildren() ) {
+            sortAllChildren( n, comparator );
+        }
     }
 
     /**
@@ -131,7 +163,6 @@ public class HierarchyBuilder
 
             n.recalculateCentroid( useSubtree );
         }
-
     }
 
     /**
