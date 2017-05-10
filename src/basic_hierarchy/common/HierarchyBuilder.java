@@ -88,7 +88,7 @@ public class HierarchyBuilder
         createParentChildRelations( nodes, progressReporter );
 
         statusMsg = "Fixing depth gaps...";
-        nodes.addAll( fixDepthGaps( nodes, useSubtree, progressReporter ) );
+        nodes.addAll( fixDepthGaps( nodes, root.getId(), useSubtree, progressReporter ) );
 
         if ( fixBreadthGaps ) {
             progress = -1;
@@ -228,13 +228,15 @@ public class HierarchyBuilder
      * 
      * @param nodes
      *            the original collection of nodes
+     * @param rootId
+     *            id of the root node
      * @param useSubtree
      *            whether the centroid calculation should also include child nodes' instances
      * @param progressReporter
      *            function used to report progress of this operation. Can be null.
      * @return collection of artificial nodes created as a result of this method
      */
-    public static List<BasicNode> fixDepthGaps( List<BasicNode> nodes, boolean useSubtree, Consumer<Integer> progressReporter )
+    public static List<BasicNode> fixDepthGaps( List<BasicNode> nodes, String rootId, boolean useSubtree, Consumer<Integer> progressReporter )
     {
         if ( progressReporter != null )
             progressReporter.accept( 0 );
@@ -254,7 +256,7 @@ public class HierarchyBuilder
                 progressReporter.accept( (int)( 100 * ( (double)i / total ) ) );
             BasicNode node = nodes.get( i );
 
-            if ( node.getId().equals( Constants.ROOT_ID ) ) {
+            if ( node.getId().equals( rootId ) ) {
                 // Don't consider the root node.
                 continue;
             }
