@@ -19,6 +19,61 @@ public class BasicHierarchy implements Hierarchy
 	private int overallNumberOfInstances;
     private String[] dataNames;
 
+
+    /**
+     * Creates a new hierarchy object. This constructor infers all other parameters from
+     * the list of nodes. As such, it is required that the nodes in the list contain all
+     * information possible (instances, parent-child relations, true class, etc.)
+     * 
+     * @param nodes
+     *            list of all nodes comprising this hierarchy
+     * @param dataNames
+     *            names for instance features. Can be null.
+     */
+    public BasicHierarchy( List<? extends Node> nodes, String[] dataNames )
+    {
+        for ( Node n : nodes ) {
+            if ( n.getParent() == null ) {
+                root = n;
+                break;
+            }
+        }
+        if ( root == null ) {
+            throw new IllegalArgumentException( "Node collection does not contain a root node." );
+        }
+
+        this.dataNames = dataNames == null ? null : Arrays.copyOf( dataNames, dataNames.length );
+        this.groups = nodes.toArray( new BasicNode[nodes.size()] );
+
+        boolean withTrueClass = root.getSubtreeInstances().get( 0 ).getTrueClass() != null;
+
+        Map<String, Integer> eachClassWithCount = new HashMap<>();
+        for ( Node n : nodes ) {
+            List<Instance> instances = n.getNodeInstances();
+            this.overallNumberOfInstances += instances.size();
+
+            if ( !withTrueClass )
+                continue;
+
+            for ( Instance i : instances ) {
+                // Can't use getOrDefault() due to version requirements
+                Integer prev = eachClassWithCount.get( i.getTrueClass() );
+                eachClassWithCount.put( i.getTrueClass(), ( prev == null ? 0 : prev ) + 1 );
+            }
+        }
+
+        classes = new String[eachClassWithCount.size()];
+        classCounts = new int[eachClassWithCount.size()];
+
+        LinkedList<String> sortedKeys = new LinkedList<String>( eachClassWithCount.keySet() );
+        Collections.sort( sortedKeys, new StringIdComparator() );
+        for ( int index = 0; index < sortedKeys.size(); ++index ) {
+            String key = sortedKeys.get( index );
+            classes[index] = key;
+            classCounts[index] = eachClassWithCount.get( key );
+        }
+    }
+
     /**
      * Creates a new hierarchy object.
      *
