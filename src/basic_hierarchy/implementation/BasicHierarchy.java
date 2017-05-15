@@ -26,21 +26,14 @@ public class BasicHierarchy implements Hierarchy
      * information possible (instances, parent-child relations, true class, etc.)
      * 
      * @param nodes
-     *            list of all nodes comprising this hierarchy
+     *            list of all nodes comprising this hierarchy.
+     *            This list must be sorted in ascending order by nodes' ids.
      * @param dataNames
      *            names for instance features. Can be null.
      */
     public BasicHierarchy( List<? extends Node> nodes, String[] dataNames )
     {
-        for ( Node n : nodes ) {
-            if ( n.getParent() == null ) {
-                root = n;
-                break;
-            }
-        }
-        if ( root == null ) {
-            throw new IllegalArgumentException( "Node collection does not contain a root node." );
-        }
+        root = nodes.get( 0 );
 
         this.dataNames = dataNames == null ? null : Arrays.copyOf( dataNames, dataNames.length );
         this.groups = nodes.toArray( new BasicNode[nodes.size()] );
