@@ -38,11 +38,12 @@ public class BasicHierarchy implements Hierarchy
         this.dataNames = dataNames == null ? null : Arrays.copyOf( dataNames, dataNames.length );
         this.groups = nodes.toArray( new BasicNode[nodes.size()] );
 
-        boolean withTrueClass = root.getSubtreeInstances().get( 0 ).getTrueClass() != null;
+        List<Instance> instances = root.getSubtreeInstances();
+        boolean withTrueClass = instances.isEmpty() || instances.get( 0 ).getTrueClass() != null;
 
         Map<String, Integer> eachClassWithCount = new HashMap<>();
         for ( Node n : nodes ) {
-            List<Instance> instances = n.getNodeInstances();
+            instances = n.getNodeInstances();
             this.overallNumberOfInstances += instances.size();
 
             if ( !withTrueClass )
