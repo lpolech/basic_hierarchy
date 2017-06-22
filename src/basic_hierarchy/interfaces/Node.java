@@ -45,12 +45,28 @@ public interface Node
 	public Instance getNodeRepresentation();
 
 	/**
+     * Sets the id of this node.
+     *
+     * @param id
+     *            the new parent node
+     */
+	public void setId(String id);
+
+	/**
 	 * Sets the parent node of this node.
 	 * 
 	 * @param parent
 	 *            the new parent node
 	 */
 	public void setParent( Node parent );
+
+	/**
+     * Sets the node's parent id.
+     *
+     * @param parentId
+     *            node's parent id to set.
+     */
+	public void setParentId(String parentId);
 
 	/**
 	 * Sets the children nodes of this node.

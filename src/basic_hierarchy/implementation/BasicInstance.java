@@ -30,13 +30,23 @@ public class BasicInstance implements Instance
 		return instanceName;
 	}
 
-	@Override
+    @Override
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
+
+    @Override
 	public double[] getData()
 	{
 		return data;
 	}
 
-	@Override
+    @Override
+    public void setData(double[] data) {
+        this.data = data;
+    }
+
+    @Override
 	public String getNodeId()
 	{
 		return nodeId;
@@ -53,4 +63,9 @@ public class BasicInstance implements Instance
 	{
 		return trueClass;
 	}
+
+    @Override
+    public void setTrueClass(String trueClass) {
+
+    }
 }

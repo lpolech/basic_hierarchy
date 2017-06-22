@@ -51,7 +51,13 @@ public class BasicNode implements Node
 		this.parent = parent;
 	}
 
-	public void setId( String id )
+    @Override
+    public void setParentId(String parentId) {
+        this.getParent().setId(parentId);
+    }
+
+    @Override
+    public void setId( String id )
 	{
 		this.id = id;
 	}

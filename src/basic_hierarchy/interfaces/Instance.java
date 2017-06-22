@@ -11,16 +11,32 @@ public interface Instance
 	 */
 	public String getInstanceName();
 
+    /**
+     * @param instanceName - name of this instance. Null if not set.
+     */
+    public void setInstanceName(String instanceName);
+
 	/**
 	 * @return data row (feature values) associated with this instance.
 	 */
 	public double[] getData();
+
+    /**
+     * @param data - feature vector to set.
+     */
+	public void setData(double[] data);
 
 	/**
 	 * @return id of the true class this instance comes from ('ground truth').
 	 *         Null if not set.
 	 */
 	public String getTrueClass();
+
+    /**
+     * @param trueClass - id of the true class this instance comes from ('ground truth').
+     *         Null if not set.
+     */
+    public void setTrueClass(String trueClass);
 
 	/**
 	 * @return id of the class to which this instance has been assigned ('assigned class').
@@ -30,8 +46,7 @@ public interface Instance
 	/**
 	 * Sets the assigned class of this instance.
 	 * 
-	 * @param id
-	 *            id of the assigned class
+	 * @param id of the assigned class
 	 */
 	public void setNodeId( String id );
 }
