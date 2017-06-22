@@ -3,6 +3,7 @@ package basic_hierarchy.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class HierarchyBuilder
         createParentChildRelations( nodes, progressReporter );
 
         statusMsg = "Fixing depth gaps...";
-        nodes.addAll( fixDepthGaps( nodes, useSubtree, progressReporter ) );
+        nodes.addAll( fixDepthGaps( nodes, root.getId(), useSubtree, progressReporter ) );
 
         if ( fixBreadthGaps ) {
             progress = -1;
@@ -100,10 +101,41 @@ public class HierarchyBuilder
 
         statusMsg = "Sorting...";
         progress = 0;
+
         Collections.sort( nodes, comparator );
+        sortAllChildren( root );
+
         progress = 100;
 
         return nodes;
+    }
+
+    /**
+     * Recursively sorts all children of the specified node using {@link NodeIdComparator}
+     * 
+     * @param root
+     *            the node to sort
+     */
+    public static void sortAllChildren( Node root )
+    {
+        NodeIdComparator comparator = new NodeIdComparator();
+        sortAllChildren( root, comparator );
+    }
+
+    /**
+     * Recursively sorts all children of the specified node using the specified comparator.
+     * 
+     * @param node
+     *            the node whose children are to be sorted
+     * @param comparator
+     *            the comparator to use to sort the children
+     */
+    public static void sortAllChildren( Node node, Comparator<Node> comparator )
+    {
+        Collections.sort( node.getChildren(), comparator );
+        for ( Node n : node.getChildren() ) {
+            sortAllChildren( n, comparator );
+        }
     }
 
     /**
@@ -131,7 +163,6 @@ public class HierarchyBuilder
 
             n.recalculateCentroid( useSubtree );
         }
-
     }
 
     /**
@@ -197,13 +228,15 @@ public class HierarchyBuilder
      * 
      * @param nodes
      *            the original collection of nodes
+     * @param rootId
+     *            id of the root node
      * @param useSubtree
      *            whether the centroid calculation should also include child nodes' instances
      * @param progressReporter
      *            function used to report progress of this operation. Can be null.
      * @return collection of artificial nodes created as a result of this method
      */
-    public static List<BasicNode> fixDepthGaps( List<BasicNode> nodes, boolean useSubtree, Consumer<Integer> progressReporter )
+    public static List<BasicNode> fixDepthGaps( List<BasicNode> nodes, String rootId, boolean useSubtree, Consumer<Integer> progressReporter )
     {
         if ( progressReporter != null )
             progressReporter.accept( 0 );
@@ -223,7 +256,7 @@ public class HierarchyBuilder
                 progressReporter.accept( (int)( 100 * ( (double)i / total ) ) );
             BasicNode node = nodes.get( i );
 
-            if ( node.getId().equals( Constants.ROOT_ID ) ) {
+            if ( node.getId().equals( rootId ) ) {
                 // Don't consider the root node.
                 continue;
             }
