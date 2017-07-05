@@ -450,14 +450,11 @@ public class HierarchyBuilder
     private static BasicNode findNearestAncestor( Map<String, BasicNode> idNodeMap, String childId )
     {
         // Work our way backwards from the given child id, ascending one level after each miss
-        String prevKey = getParentId( childId );
-
-        int size = idNodeMap.size();
-        for ( int i = 0; i < size; ++i ) {
+        String prevKey = childId;
+        while(canExtractParentId(prevKey)) {
+            prevKey = getParentId( prevKey );
             if ( idNodeMap.containsKey( prevKey ) )
                 return idNodeMap.get( prevKey );
-            else
-                prevKey = getParentId( prevKey );
         }
 
         return null;
@@ -471,6 +468,16 @@ public class HierarchyBuilder
     private static String getParentId( String id )
     {
         return id.substring( 0, id.lastIndexOf( Constants.HIERARCHY_BRANCH_SEPARATOR ) );
+    }
+
+    /**
+     * @param id
+     *            the id in which it should be checked if contains parent
+     * @return boolean value predicting if it is possible to extract parent id from this id
+     */
+    private static boolean canExtractParentId( String id )
+    {
+        return id.contains( Constants.ROOT_ID );
     }
 
     /**
