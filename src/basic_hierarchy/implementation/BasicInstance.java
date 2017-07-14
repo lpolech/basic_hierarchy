@@ -66,6 +66,6 @@ public class BasicInstance implements Instance
 
     @Override
     public void setTrueClass(String trueClass) {
-
+        this.trueClass = trueClass;
     }
 }
