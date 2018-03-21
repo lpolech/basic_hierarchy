@@ -83,7 +83,8 @@ public class BasicHierarchy implements Hierarchy
      *            total number of instances in the hierarchy
      */
     public BasicHierarchy(
-            Node root, List<? extends Node> nodes,
+            Node root,
+            List<? extends Node> nodes,
             String[] dataNames,
             Map<String, Integer> eachClassWithCount,
             int overallNumberOfInstances )
@@ -115,7 +116,8 @@ public class BasicHierarchy implements Hierarchy
      *            map of classes (node identifiers) to the number of children nodes in that class
      */
     public BasicHierarchy(
-            Node root, List<? extends Node> nodes,
+            Node root,
+            List<? extends Node> nodes,
             String[] dataNames,
             Map<String, Integer> eachClassWithCount )
     {
@@ -127,7 +129,8 @@ public class BasicHierarchy implements Hierarchy
     }
 
     public BasicHierarchy(
-            Node root, List<? extends Node> nodes,
+            Node root, 
+            List<? extends Node> nodes,
             Map<String, Integer> eachClassWithCount,
             int overallNumberOfInstances )
     {
