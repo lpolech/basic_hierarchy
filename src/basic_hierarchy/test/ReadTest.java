@@ -28,7 +28,9 @@ public class ReadTest {
 			e.printStackTrace();
 		}
 		
-		H.printTree();
+		//H.printTree();
+		assertEquals(5000, H.getOverallNumberOfInstances());
+		assertEquals(2, H.getRoot().getNodeRepresentation().getData().length);
 	}
 	
 	@Test
