@@ -73,4 +73,9 @@ public interface Hierarchy
 	 * @return names for each data column in this hierarchy
 	 */
 	public String[] getDataNames();
+	
+	/**
+	 * Deletes data names array
+	 */
+	public void deleteDataNames();
 }
