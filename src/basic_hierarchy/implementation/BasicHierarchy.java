@@ -294,4 +294,8 @@ public class BasicHierarchy implements Hierarchy
 	{
 		root.printSubtree();
 	}
+	public void deleteDataNames()
+	{
+		dataNames=null;
+	}
 }
