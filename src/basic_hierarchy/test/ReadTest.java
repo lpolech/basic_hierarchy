@@ -1,7 +1,6 @@
 package basic_hierarchy.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -11,27 +10,26 @@ import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.reader.GeneratedCSVReader;
 
 public class ReadTest {
-	
+
 	GeneratedCSVReader CSVReader;
-	
+
 	public ReadTest() {
 		CSVReader = new GeneratedCSVReader();
 	}
-	
+
 	@Test
 	public void testGeneratedCSVReader() {
 		Hierarchy H = null;
 		try {
 			H = CSVReader.load("balancedTree5000.csv", false, false, false, false, true);
-		}
-		catch ( IOException e ) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		assertEquals(5000, H.getOverallNumberOfInstances());
 		assertEquals(2, H.getRoot().getNodeRepresentation().getData().length);
 	}
-	
+
 	@Test
 	public void testGetProgress() {
 		assertEquals(0, CSVReader.getProgress());
