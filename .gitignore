@@ -2,3 +2,5 @@
 out/
 src/META-INF/
 /.project
+/bin/
+/.classpath
