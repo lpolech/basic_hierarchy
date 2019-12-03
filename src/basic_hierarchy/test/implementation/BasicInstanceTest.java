@@ -8,10 +8,11 @@ import basic_hierarchy.implementation.BasicInstance;
 
 public class BasicInstanceTest {
 
+	private static final String GEN_0 = "gen.0";
 	BasicInstance basIn;
 	
 	public BasicInstanceTest() {
-		basIn = new BasicInstance("inst", "gen.0", new double[]{0.0, 0.5}, null);
+		basIn = new BasicInstance("inst", GEN_0, new double[]{0.0, 0.5}, null);
 	}
 
 	@Test
@@ -40,12 +41,12 @@ public class BasicInstanceTest {
 
 	@Test
 	public void testGetNodeId() {
-		assertEquals("gen.0", basIn.getNodeId());
+		assertEquals(GEN_0, basIn.getNodeId());
 	}
 
 	@Test
 	public void testSetNodeId() {
-		assertEquals("gen.0", basIn.getNodeId());
+		assertEquals(GEN_0, basIn.getNodeId());
 		basIn.setNodeId("noweId");
 		assertEquals("noweId", basIn.getNodeId());
 	}

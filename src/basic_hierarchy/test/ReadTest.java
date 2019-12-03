@@ -11,32 +11,31 @@ import basic_hierarchy.reader.GeneratedCSVReader;
 
 public class ReadTest {
 
-	GeneratedCSVReader CSVReader;
+	GeneratedCSVReader csvReader;
 
 	public ReadTest() {
-		CSVReader = new GeneratedCSVReader();
+		csvReader = new GeneratedCSVReader();
 	}
 
 	@Test
 	public void testGeneratedCSVReader() {
-		Hierarchy H = null;
+		Hierarchy h = null;
 		try {
-			H = CSVReader.load("balancedTree5000.csv", false, false, false, false, true);
+			h = csvReader.load("balancedTree5000.csv", false, false, false, false, true);
+			assertEquals(5000, h.getOverallNumberOfInstances());
+			assertEquals(2, h.getRoot().getNodeRepresentation().getData().length);
 		} catch (IOException e) {
-			e.printStackTrace();
+			org.junit.Assert.fail(e.toString());
 		}
-
-		assertEquals(5000, H.getOverallNumberOfInstances());
-		assertEquals(2, H.getRoot().getNodeRepresentation().getData().length);
 	}
 
 	@Test
 	public void testGetProgress() {
-		assertEquals(0, CSVReader.getProgress());
+		assertEquals(0, csvReader.getProgress());
 	}
 
 	@Test
 	public void testGetStatusMessage() {
-		assertEquals("", CSVReader.getStatusMessage());
+		assertEquals("", csvReader.getStatusMessage());
 	}
 }

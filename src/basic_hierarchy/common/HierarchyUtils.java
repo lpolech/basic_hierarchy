@@ -3,9 +3,10 @@ package basic_hierarchy.common;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,11 +28,11 @@ import basic_hierarchy.interfaces.Node;
 public class HierarchyUtils {
 	private HierarchyUtils() {
 		// Static class -- disallow instantiation.
-		throw new RuntimeException("Attempted to instantiate a static class: " + getClass().getName());
+		throw new AssertionError("Attempted to instantiate a static class: " + getClass().getName());
 	}
 
 	public static int getNumberOfSubtreeGroups(Node subtreeRoot) {
-		Stack<Node> s = new Stack<Node>();
+		Stack<Node> s = new Stack<>();
 		s.push(subtreeRoot);
 		int numberOfGroups = 0;
 		while (!s.empty()) {
@@ -137,13 +138,10 @@ public class HierarchyUtils {
 		List<BasicNode> nodes = new LinkedList<>();
 		nodes.add(root);
 
-		source.getRoot().getSubtreeInstances().forEach(in -> {
-			root.addInstance(
-					new BasicInstance(in.getInstanceName(), Constants.ROOT_ID, in.getData(), in.getTrueClass()));
-		});
+		source.getRoot().getSubtreeInstances().forEach(in -> root.addInstance(
+				new BasicInstance(in.getInstanceName(), Constants.ROOT_ID, in.getData(), in.getTrueClass())));
 
-		Hierarchy flatHierarchy = buildHierarchy(nodes, source.getDataNames(), false);
-		return flatHierarchy;
+		return buildHierarchy(nodes, source.getDataNames(), false);
 	}
 
 	/**
@@ -371,7 +369,7 @@ public class HierarchyUtils {
 	}
 
 	public static double[][] toMatrix(Hierarchy source) {
-		double matrix[][] = new double[source
+		double[][] matrix = new double[source
 				.getOverallNumberOfInstances()][((BasicInstance) source.getRoot().getNodeInstances().get(0))
 						.getData().length];
 
@@ -417,12 +415,11 @@ public class HierarchyUtils {
 	public static void save(String path, Hierarchy h, boolean withAssignClass, boolean withTrueClass,
 			boolean withInstanceNames, boolean withHeader) throws IOException {
 		// Via: http://stackoverflow.com/a/9853261
-		OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(path),
-				Charset.forName("UTF-8").newEncoder());
-
-		writer.write(toCSV(h, withAssignClass, withTrueClass, withInstanceNames, withHeader));
-		writer.flush();
-		writer.close();
+		try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(path),
+				StandardCharsets.UTF_8.newEncoder());) {
+			writer.write(toCSV(h, withAssignClass, withTrueClass, withInstanceNames, withHeader));
+			writer.flush();
+		}
 	}
 
 	/**
@@ -457,8 +454,8 @@ public class HierarchyUtils {
 		}
 
 		List<Node> nodes = new ArrayList<>();
-		for (Node n : h.getGroups())
-			nodes.add(n);
+		Collections.addAll(nodes, h.getGroups());
+
 		nodes.sort(new NodeIdComparator());
 
 		for (Node node : nodes) {
@@ -544,8 +541,7 @@ public class HierarchyUtils {
 		if (withInstanceNames)
 			buf.append(instance.getInstanceName()).append(';');
 
-		buf.append(
-				Arrays.stream(instance.getData()).mapToObj(d -> Double.toString(d)).collect(Collectors.joining(";")));
+		buf.append(Arrays.stream(instance.getData()).mapToObj(Double::toString).collect(Collectors.joining(";")));
 	}
 
 	/**

@@ -9,4 +9,8 @@ public class Constants {
 	public static final String ARTIFICIAL_ROOT = "ARTIFICIAL_ROOT";
 	public static final int INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE = 1;
 	public static final int INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE = 0;
+
+	private Constants() {
+		throw new AssertionError("Static class");
+	}
 }

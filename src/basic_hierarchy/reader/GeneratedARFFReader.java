@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.implementation.BasicHierarchy;
@@ -19,6 +22,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
 public class GeneratedARFFReader implements DataReader {
+	private static final Logger log = LogManager.getLogger(GeneratedARFFReader.class);
 
 	@Override
 	public Hierarchy load(String filePath, boolean withInstancesNameAttribute, boolean withClassAttribute,
@@ -35,8 +39,7 @@ public class GeneratedARFFReader implements DataReader {
 			source = new DataSource(inputFile.getAbsolutePath());
 			data = source.getDataSet();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e);
 			System.exit(1);
 		}
 
@@ -47,9 +50,9 @@ public class GeneratedARFFReader implements DataReader {
 				+ data.numClasses());
 
 		BasicNode root = null;
-		ArrayList<BasicNode> nodes = new ArrayList<BasicNode>();
+		ArrayList<BasicNode> nodes = new ArrayList<>();
 		int numberOfInstances = 0;
-		HashMap<String, Integer> eachClassAndItsCount = new HashMap<String, Integer>();
+		HashMap<String, Integer> eachClassAndItsCount = new HashMap<>();
 
 		int numberOfDimensions = data.numAttributes() - 1;// minus assign class attribute
 		if (withClassAttribute) {
@@ -88,18 +91,8 @@ public class GeneratedARFFReader implements DataReader {
 			double[] instData = new double[numberOfDimensions];
 			int instDataIndex = 0;
 			for (int j = 0; j < inst.numAttributes(); j++) {
-				if (j == Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE)
-					continue;
 
-				if (withClassAttribute && j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
-					continue;
-
-				if (withClassAttribute && withInstancesNameAttribute
-						&& j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + 1)
-					continue;
-
-				if (!withClassAttribute && withInstancesNameAttribute
-						&& j == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
+				if (shouldSkipIndex(j, withClassAttribute, withInstancesNameAttribute))
 					continue;
 
 				instData[instDataIndex] = inst.value(j);
@@ -151,4 +144,13 @@ public class GeneratedARFFReader implements DataReader {
 		return new BasicHierarchy(root, allNodes, dataNames, eachClassAndItsCount, numberOfInstances);
 	}
 
+	private boolean shouldSkipIndex(int index, boolean withClassAttribute, boolean withInstancesNameAttribute) {
+		return (index == Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE)
+				|| (withClassAttribute && index == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE)
+				|| (withClassAttribute && withInstancesNameAttribute
+						&& index == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE + 1)
+				|| (!withClassAttribute && withInstancesNameAttribute
+						&& index == Constants.INDEX_OF_GROUND_TRUTH_IN_WEKA_INSTANCE);
+
+	}
 }

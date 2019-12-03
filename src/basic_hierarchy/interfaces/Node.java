@@ -2,13 +2,11 @@ package basic_hierarchy.interfaces;
 
 import java.util.LinkedList;
 
-
 /**
  * A {@link Node} is a collection of {@link Instance}s which were assigned to
  * one {@link Node} by some method or generator.
  */
-public interface Node
-{
+public interface Node {
 	/**
 	 * @return the id of this node.
 	 */
@@ -45,68 +43,60 @@ public interface Node
 	public Instance getNodeRepresentation();
 
 	/**
-     * Sets the id of this node.
-     *
-     * @param id
-     *            the new parent node
-     */
+	 * Sets the id of this node.
+	 *
+	 * @param id the new parent node
+	 */
 	public void setId(String id);
 
 	/**
 	 * Sets the parent node of this node.
 	 * 
-	 * @param parent
-	 *            the new parent node
+	 * @param parent the new parent node
 	 */
-	public void setParent( Node parent );
+	public void setParent(Node parent);
 
 	/**
-     * Sets the node's parent id.
-     *
-     * @param parentId
-     *            node's parent id to set.
-     */
+	 * Sets the node's parent id.
+	 *
+	 * @param parentId node's parent id to set.
+	 */
 	public void setParentId(String parentId);
 
 	/**
 	 * Sets the children nodes of this node.
 	 * 
-	 * @param children
-	 *            list of children nodes
+	 * @param children list of children nodes
 	 */
-	public void setChildren( LinkedList<Node> children );
+	public void setChildren(LinkedList<Node> children);
 
 	/**
 	 * Adds a child node to this node.
 	 * 
-	 * @param child
-	 *            the node to add
+	 * @param child the node to add
 	 */
-	public void addChild( Node child );
+	public void addChild(Node child);
 
 	/**
 	 * Adds a new instance to this node.
 	 * 
-	 * @param instance
-	 *            the instance to add
+	 * @param instance the instance to add
 	 */
-	public void addInstance( Instance instance );
+	public void addInstance(Instance instance);
 
 	/**
 	 * Sets the instance list of this node.
 	 * 
-	 * @param instances
-	 *            list of instances
+	 * @param instances list of instances
 	 */
-	public void setInstances( LinkedList<Instance> instances );
+	public void setInstances(LinkedList<Instance> instances);
 
 	/**
 	 * Sets the representation instance of this node.
 	 * 
-	 * @param representation
-	 *            representation instance
+	 * @param representation representation instance
 	 */
-	public void setRepresentation( Instance representation );
+	public void setRepresentation(Instance representation);
 
 	/**
 	 * Prints the String representation of this Node to the console

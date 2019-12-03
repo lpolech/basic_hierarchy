@@ -14,134 +14,119 @@ import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 import basic_hierarchy.implementation.BasicNode;
 
+public class HierarchyBuilderTest {
+	private static final String GEN_0_0_10 = "gen.0.0.10";
+	List<BasicNode> nodes;
+	BasicNode root;
 
-public class HierarchyBuilderTest
-{
-    List<BasicNode> nodes;
-    BasicNode root;
+	@Before
+	public void setup() {
+		nodes = new ArrayList<>();
 
+		root = new BasicNode(Constants.ROOT_ID, null, false);
 
-    @Before
-    public void setup()
-    {
-        nodes = new ArrayList<>();
+		nodes.add(root);
+		nodes.add(new BasicNode(GEN_0_0_10, null, false));
+		nodes.add(new BasicNode("gen.0.0.11.3", null, false));
+		nodes.add(new BasicNode("gen.0.0.11.5", null, false));
+	}
 
-        root = new BasicNode( Constants.ROOT_ID, null, false );
+	@Test
+	public void assertBranchSeparatorSingleChar() {
+		// HierarchyBuilder makes optimizations under the assumption that the branch
+		// separator for node IDs is a single character.
+		Assert.assertEquals(1, Constants.HIERARCHY_BRANCH_SEPARATOR.length());
+	}
 
-        nodes.add( root );
-        nodes.add( new BasicNode( "gen.0.0.10", null, false ) );
-        nodes.add( new BasicNode( "gen.0.0.11.3", null, false ) );
-        nodes.add( new BasicNode( "gen.0.0.11.5", null, false ) );
-    }
+	@Test
+	public void idOrdering() {
+		// Test that the sorting algorithm works as we expect it to.
+		String[] expected = { "gen.0.0.1", "gen.0.0.1.0", "gen.0.0.2", GEN_0_0_10, "gen.0.1", "gen.0.2",
+				"gen.0.10.0" };
 
-    @Test
-    public void assertBranchSeparatorSingleChar()
-    {
-        // HierarchyBuilder makes optimizations under the assumption that the branch
-        // separator for node IDs is a single character.
-        Assert.assertEquals( 1, Constants.HIERARCHY_BRANCH_SEPARATOR.length() );
-    }
+		String[] sorted = Arrays.copyOf(expected, expected.length);
+		Arrays.sort(sorted, new AlphanumComparator());
 
-    @Test
-    public void idOrdering()
-    {
-        // Test that the sorting algorithm works as we expect it to.
-        String[] expected = {
-            "gen.0.0.1",
-            "gen.0.0.1.0",
-            "gen.0.0.2",
-            "gen.0.0.10",
-            "gen.0.1",
-            "gen.0.2",
-            "gen.0.10.0"
-        };
+		Assert.assertArrayEquals(expected, sorted);
+	}
 
-        String[] sorted = Arrays.copyOf( expected, expected.length );
-        Arrays.sort( sorted, new AlphanumComparator() );
+	@Test
+	public void fixDepthGaps() {
+		// Test that fixDepthGaps algorithm works correctly.
 
-        Assert.assertArrayEquals( expected, sorted );
-    }
+		// Creates:
+		// - gen.0.0
+		// - gen.0.0.11
+		List<BasicNode> artificial = HierarchyBuilder.fixDepthGaps(nodes, Constants.ROOT_ID, false, null);
 
-    @Test
-    public void fixDepthGaps() throws Exception
-    {
-        // Test that fixDepthGaps algorithm works correctly.
+		// Assert that no unexpected nodes have been created
+		Assert.assertEquals(2, artificial.size());
 
-        // Creates:
-        // - gen.0.0
-        // - gen.0.0.11
-        List<BasicNode> artificial = HierarchyBuilder.fixDepthGaps( nodes, Constants.ROOT_ID, false, null );
+		BasicNode artificial0 = findNodeWithId(artificial, "gen.0.0");
+		BasicNode artificial1 = findNodeWithId(artificial, "gen.0.0.11");
 
-        // Assert that no unexpected nodes have been created
-        Assert.assertEquals( 2, artificial.size() );
+		BasicNode leaf0 = findNodeWithId(nodes, GEN_0_0_10);
+		BasicNode leaf1 = findNodeWithId(nodes, "gen.0.0.11.3");
+		BasicNode leaf2 = findNodeWithId(nodes, "gen.0.0.11.5");
 
-        BasicNode artificial0 = findNodeWithId( artificial, "gen.0.0" );
-        BasicNode artificial1 = findNodeWithId( artificial, "gen.0.0.11" );
+		// Assert child -> parent relations
+		Assert.assertEquals(root, artificial0.getParent());
+		Assert.assertEquals(artificial0, artificial1.getParent());
+		Assert.assertEquals(artificial0, leaf0.getParent());
+		Assert.assertEquals(artificial1, leaf1.getParent());
+		Assert.assertEquals(artificial1, leaf2.getParent());
 
-        BasicNode leaf0 = findNodeWithId( nodes, "gen.0.0.10" );
-        BasicNode leaf1 = findNodeWithId( nodes, "gen.0.0.11.3" );
-        BasicNode leaf2 = findNodeWithId( nodes, "gen.0.0.11.5" );
+		// Assert parent -> child relations
+		Assert.assertTrue(root.getChildren().contains(artificial0));
+		Assert.assertTrue(artificial0.getChildren().contains(artificial1));
+		Assert.assertTrue(artificial0.getChildren().contains(leaf0));
+		Assert.assertTrue(artificial1.getChildren().contains(leaf1));
+		Assert.assertTrue(artificial1.getChildren().contains(leaf2));
+	}
 
-        // Assert child -> parent relations
-        Assert.assertEquals( root, artificial0.getParent() );
-        Assert.assertEquals( artificial0, artificial1.getParent() );
-        Assert.assertEquals( artificial0, leaf0.getParent() );
-        Assert.assertEquals( artificial1, leaf1.getParent() );
-        Assert.assertEquals( artificial1, leaf2.getParent() );
+	@Test
+	public void fixBreadthGaps() {
+		// Test that fixBreadthGaps algorithm works correctly.
 
-        // Assert parent -> child relations
-        Assert.assertTrue( root.getChildren().contains( artificial0 ) );
-        Assert.assertTrue( artificial0.getChildren().contains( artificial1 ) );
-        Assert.assertTrue( artificial0.getChildren().contains( leaf0 ) );
-        Assert.assertTrue( artificial1.getChildren().contains( leaf1 ) );
-        Assert.assertTrue( artificial1.getChildren().contains( leaf2 ) );
-    }
+		// Creates:
+		// - gen.0.0
+		// - gen.0.0.11
+		List<BasicNode> artificialDepth = HierarchyBuilder.fixDepthGaps(nodes, Constants.ROOT_ID, false, null);
 
-    @Test
-    public void fixBreadthGaps() throws Exception
-    {
-        // Test that fixBreadthGaps algorithm works correctly.
+		// Creates:
+		// - gen.0.0.[0-9]
+		// - gen.0.0.11.0
+		// - gen.0.0.11.1
+		// - gen.0.0.11.2
+		// - gen.0.0.11.4
+		List<BasicNode> artificialBreadth = HierarchyBuilder.fixBreadthGaps(root, false);
 
-        // Creates:
-        // - gen.0.0
-        // - gen.0.0.11
-        List<BasicNode> artificialDepth = HierarchyBuilder.fixDepthGaps( nodes, Constants.ROOT_ID, false, null );
+		BasicNode artificial1 = findNodeWithId(artificialDepth, "gen.0.0.11");
 
-        // Creates:
-        // - gen.0.0.[0-9]
-        // - gen.0.0.11.0
-        // - gen.0.0.11.1
-        // - gen.0.0.11.2
-        // - gen.0.0.11.4
-        List<BasicNode> artificialBreadth = HierarchyBuilder.fixBreadthGaps( root, false );
+		Assert.assertEquals(14, artificialBreadth.size());
 
-        BasicNode artificial1 = findNodeWithId( artificialDepth, "gen.0.0.11" );
+		// Compiling under Java 7, can't use lambdas...
+		List<BasicNode> gen11 = new ArrayList<>();
+		for (BasicNode n : artificialBreadth) {
+			if (n.getId().startsWith("gen.0.0.11."))
+				gen11.add(n);
+		}
 
-        Assert.assertEquals( 14, artificialBreadth.size() );
+		Assert.assertEquals(4, gen11.size());
 
-        // Compiling under Java 7, can't use lambdas...
-        List<BasicNode> gen11 = new ArrayList<BasicNode>();
-        for ( BasicNode n : artificialBreadth ) {
-            if ( n.getId().startsWith( "gen.0.0.11." ) )
-                gen11.add( n );
-        }
+		Assert.assertTrue(artificial1.getChildren().containsAll(gen11));
 
-        Assert.assertEquals( 4, gen11.size() );
+		for (BasicNode leaf : gen11) {
+			Assert.assertEquals(artificial1, leaf.getParent());
+		}
+	}
 
-        Assert.assertTrue( artificial1.getChildren().containsAll( gen11 ) );
+	private BasicNode findNodeWithId(Collection<BasicNode> c, String id) {
+		for (BasicNode n : c) {
+			if (n.getId().equals(id))
+				return n;
+		}
 
-        for ( BasicNode leaf : gen11 ) {
-            Assert.assertEquals( artificial1, leaf.getParent() );
-        }
-    }
-
-    private BasicNode findNodeWithId( Collection<BasicNode> c, String id )
-    {
-        for ( BasicNode n : c ) {
-            if ( n.getId().equals( id ) )
-                return n;
-        }
-
-        return null;
-    }
+		return null;
+	}
 }

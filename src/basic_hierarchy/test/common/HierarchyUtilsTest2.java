@@ -13,6 +13,10 @@ import basic_hierarchy.test.TestCommon;
 
 public class HierarchyUtilsTest2 {
 
+	private static final String GEN_0_0_0 = "gen.0.0.0";
+	private static final String GEN_0_0 = "gen.0.0";
+	private static final String GEN_0 = "gen.0";
+	private static final String GEN_0_1 = "gen.0.1";
 	Hierarchy h;
 
 	public HierarchyUtilsTest2() {
@@ -22,24 +26,24 @@ public class HierarchyUtilsTest2 {
 	@Test
 	public void testGetClassCountMap() {
 		Map<String, Integer> map = HierarchyUtils.getClassCountMap(h);
-		assertEquals(4, (int) map.get("gen.0"));
-		assertEquals(2, (int) map.get("gen.0.0"));
-		assertEquals(3, (int) map.get("gen.0.0.0"));
-		assertEquals(2, (int) map.get("gen.0.1"));
+		assertEquals(4, (int) map.get(GEN_0));
+		assertEquals(2, (int) map.get(GEN_0_0));
+		assertEquals(3, (int) map.get(GEN_0_0_0));
+		assertEquals(2, (int) map.get(GEN_0_1));
 	}
 
 	@Test
 	public void testComputeClassCountMap() {
 		Map<String, Integer> map = HierarchyUtils.computeClassCountMap(h.getRoot());
-		assertEquals(4, (int) map.get("gen.0"));
-		assertEquals(2, (int) map.get("gen.0.0"));
-		assertEquals(3, (int) map.get("gen.0.0.0"));
-		assertEquals(2, (int) map.get("gen.0.1"));
+		assertEquals(4, (int) map.get(GEN_0));
+		assertEquals(2, (int) map.get(GEN_0_0));
+		assertEquals(3, (int) map.get(GEN_0_0_0));
+		assertEquals(2, (int) map.get(GEN_0_1));
 	}
 
 	@Test
 	public void testRemove() {
-		Hierarchy newH = HierarchyUtils.remove(h, "gen.0.1");
+		Hierarchy newH = HierarchyUtils.remove(h, GEN_0_1);
 		assertEquals(11, h.getOverallNumberOfInstances());
 		assertEquals(8, newH.getOverallNumberOfInstances());
 	}

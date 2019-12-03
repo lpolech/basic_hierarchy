@@ -21,7 +21,7 @@ public class BasicHierarchyTest {
 		Hierarchy h = TestCommon.getFourGroupsHierarchy();
 		Hierarchy flat = h.getFlatClusteringWithCommonEmptyRoot();
 
-		assertEquals(h.getGroups().length + 1, flat.getGroups().length);
+		assertEquals(h.getGroups().length + 1l, flat.getGroups().length);
 		assertEquals(h.getGroups().length, flat.getRoot().getChildren().size());
 
 		for (int i = 0; i < flat.getRoot().getChildren().size(); i++) {
@@ -50,7 +50,7 @@ public class BasicHierarchyTest {
 		Hierarchy h = TestCommon.getTwoGroupsHierarchyWithEmptyNodes();
 		Hierarchy flat = h.getFlatClusteringWithCommonEmptyRoot();
 
-		assertEquals(2 + 1, flat.getGroups().length);// two groups + one artificial root
+		assertEquals(2 + 1l, flat.getGroups().length);// two groups + one artificial root
 		assertEquals(2, flat.getRoot().getChildren().size());
 
 		for (int i = 0; i < flat.getRoot().getChildren().size(); i++) {

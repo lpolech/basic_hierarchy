@@ -26,6 +26,14 @@ import basic_hierarchy.test.TestCommon;
 
 public class HierarchyUtilsTest {
 
+	private static final String GEN_0_3 = "gen.0.3";
+	private static final String GEN_0_1 = "gen.0.1";
+	private static final String GEN_0_0 = "gen.0.0";
+	private static final String GEN_0 = "gen.0";
+	private static final String GEN_0_2 = "gen.0.2";
+	private static final String GEN_0_1_1 = "gen.0.1.1";
+	private Random random;
+
 	@Test
 	public void testGetOneClusterHierarchy() {
 		Hierarchy h = TestCommon.getTwoGroupsHierarchy();
@@ -53,13 +61,14 @@ public class HierarchyUtilsTest {
 	 * Feature values' array is copied by reference when cloning Instances (memory
 	 * optimization)
 	 */
-	private static final boolean _featureArrayOptimization = true;
+	private static final boolean FEATURE_ARRAY_OPTIMIZATION = true;
 
 	Hierarchy alpha = null;
 
 	@Before
 	public void setup() {
-		alpha = generateHierarchy(3000, 2, "gen.0", "gen.0.0", "gen.0.1", "gen.0.2", "gen.0.3", "gen.0.1.1");
+		alpha = generateHierarchy(3000, 2, GEN_0, GEN_0_0, GEN_0_1, GEN_0_2, GEN_0_3, GEN_0_1_1);
+		random = new Random();
 	}
 
 	@Test
@@ -72,17 +81,17 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testSubHierarchy() {
-		testSubHierarchy(alpha, "gen.0.2", Constants.ROOT_ID);
-		testSubHierarchy(alpha, "gen.0.1.1", Constants.ROOT_ID);
+		testSubHierarchy(alpha, GEN_0_2, Constants.ROOT_ID);
+		testSubHierarchy(alpha, GEN_0_1_1, Constants.ROOT_ID);
 	}
 
 	@Test
 	public void testMerge() {
-		Hierarchy test = HierarchyUtils.subHierarchy(alpha, "gen.0.2", Constants.ROOT_ID);
-		testMerge(alpha, test, "gen.0.2");
+		Hierarchy test = HierarchyUtils.subHierarchy(alpha, GEN_0_2, Constants.ROOT_ID);
+		testMerge(alpha, test, GEN_0_2);
 
-		test = HierarchyUtils.subHierarchy(alpha, "gen.0.1.1", "gen.0.8.4.3");
-		testMerge(alpha, test, "gen.0.1.1");
+		test = HierarchyUtils.subHierarchy(alpha, GEN_0_1_1, "gen.0.8.4.3");
+		testMerge(alpha, test, GEN_0_1_1);
 	}
 
 	// -------------------------------------------------------------
@@ -122,7 +131,7 @@ public class HierarchyUtilsTest {
 				Assert.assertFalse(alphaI == testI);
 				Assert.assertEquals(alphaI.getTrueClass(), testI.getTrueClass());
 				Assert.assertEquals(alphaI.getInstanceName(), testI.getInstanceName());
-				if (_featureArrayOptimization) {
+				if (FEATURE_ARRAY_OPTIMIZATION) {
 					Assert.assertEquals(alphaI.getData(), testI.getData());
 				} else {
 					Assert.assertFalse(alphaI.getData() == testI.getData());
@@ -181,7 +190,7 @@ public class HierarchyUtilsTest {
 		Assert.assertEquals(aIs.size(), bIs.size());
 		final int _endi = aIs.size();
 		for (int i = 0; i < _endi; ++i) {
-			compareInstances(aIs.get(i), bIs.get(i), _featureArrayOptimization);
+			compareInstances(aIs.get(i), bIs.get(i), FEATURE_ARRAY_OPTIMIZATION);
 		}
 	}
 
@@ -194,7 +203,7 @@ public class HierarchyUtilsTest {
 	 *                                 optimization)
 	 */
 	public static void compareInstances(Instance a, Instance b, boolean featureArrayOptimization) {
-		if (a == null && b == null)
+		if (a == null || b == null)
 			return;
 
 		Assert.assertFalse(a == b);
@@ -212,7 +221,6 @@ public class HierarchyUtilsTest {
 	// -------------------------------------------------------------
 
 	public BasicHierarchy generateHierarchy(int instanceCount, int dimCount, String... ids) {
-		Random r = new Random();
 
 		int nodeCount = ids.length;
 		int currentInstanceCount = 0;
@@ -220,7 +228,7 @@ public class HierarchyUtilsTest {
 
 		List<BasicNode> nodes = new ArrayList<>();
 		for (int i = 0; i < nodeCount; ++i) {
-			int nodeInstanceCount = Math.max(1, (int) (avgInstancePerNode * (r.nextGaussian() + 1)));
+			int nodeInstanceCount = Math.max(1, (int) (avgInstancePerNode * (random.nextGaussian() + 1)));
 			if (i == nodeCount - 1 && currentInstanceCount + nodeInstanceCount < instanceCount) {
 				nodeInstanceCount = instanceCount - currentInstanceCount;
 			}

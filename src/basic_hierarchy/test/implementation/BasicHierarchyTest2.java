@@ -25,6 +25,11 @@ import basic_hierarchy.test.TestCommon;
 
 public class BasicHierarchyTest2 {
 
+	private static final String GEN_0_0 = "gen.0.0";
+	private static final String THIRD = "third";
+	private static final String SECOND = "second";
+	private static final String GEN_0 = "gen.0";
+	private static final String FIRST = "first";
 	Hierarchy h;
 	Hierarchy flat;
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -50,16 +55,15 @@ public class BasicHierarchyTest2 {
 	@Test
 	public void testBasicHierarchyListOfQextendsNodeStringArray() {
 		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance("first", "gen.0", new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance("second", "gen.0", new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance("third", "gen.0", new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(FIRST, GEN_0, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(SECOND, GEN_0, new double[] { 1.5, 2.0 }, null));
+		instances.add(new BasicInstance(THIRD, GEN_0, new double[] { 0.0, 0.5 }, null));
 
 		BasicNode node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
 
 		LinkedList<Node> nodes = new LinkedList<>();
 		nodes.add(node);
-		nodes.add(
-				new BasicNode("id2", null, (new BasicInstance("two", "gen.0.0", new double[] { 0.0, -1.5 }, "gen.0"))));
+		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", GEN_0_0, new double[] { 0.0, -1.5 }, GEN_0))));
 
 		h = new BasicHierarchy(nodes, new String[] {});
 
@@ -69,8 +73,8 @@ public class BasicHierarchyTest2 {
 		Hierarchy h2 = new BasicHierarchy(nodes2, null);
 
 		LinkedList<Node> nodes3 = new LinkedList<>();
-		nodes3.add(new BasicNode("id1", null, (new BasicInstance("one", "gen.0", new double[] { 1.0, 1.5 }, null))));
-		nodes3.add(new BasicNode("id2", null, (new BasicInstance("two", "gen.0.0", new double[] { 0.0, -1.5 }, null))));
+		nodes3.add(new BasicNode("id1", null, (new BasicInstance("one", GEN_0, new double[] { 1.0, 1.5 }, null))));
+		nodes3.add(new BasicNode("id2", null, (new BasicInstance("two", GEN_0_0, new double[] { 0.0, -1.5 }, null))));
 
 		Hierarchy h3 = new BasicHierarchy(nodes3, new String[] {});
 
@@ -79,18 +83,18 @@ public class BasicHierarchyTest2 {
 	@Test
 	public void testBasicHierarchyNodeListOfQextendsNodeStringArrayMapOfStringIntegerInt() {
 		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance("first", "gen.0", new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance("second", "gen.0", new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance("third", "gen.0", new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(FIRST, GEN_0, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(SECOND, GEN_0, new double[] { 1.5, 2.0 }, null));
+		instances.add(new BasicInstance(THIRD, GEN_0, new double[] { 0.0, 0.5 }, null));
 
 		BasicNode node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
 
 		LinkedList<Node> nodes = new LinkedList<>();
-		nodes.add(new BasicNode("id1", null, (new BasicInstance("one", "gen.0", new double[] { 1.0, 1.5 }, null))));
-		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", "gen.0.0", new double[] { 0.0, -1.5 }, null))));
+		nodes.add(new BasicNode("id1", null, (new BasicInstance("one", GEN_0, new double[] { 1.0, 1.5 }, null))));
+		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", GEN_0_0, new double[] { 0.0, -1.5 }, null))));
 
-		HashMap<String, Integer> map = new HashMap<String, Integer>();
-		map.put("gen.0", 1);
+		HashMap<String, Integer> map = new HashMap<>();
+		map.put(GEN_0, 1);
 		h = new BasicHierarchy(node, nodes, new String[] {}, map, 3);
 
 	}
@@ -98,15 +102,15 @@ public class BasicHierarchyTest2 {
 	@Test
 	public void testBasicHierarchyNodeListOfQextendsNodeStringArrayMapOfStringInteger() {
 		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance("first", "gen.0", new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance("second", "gen.0", new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance("third", "gen.0", new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(FIRST, GEN_0, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(SECOND, GEN_0, new double[] { 1.5, 2.0 }, null));
+		instances.add(new BasicInstance(THIRD, GEN_0, new double[] { 0.0, 0.5 }, null));
 
 		BasicNode node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
 
 		LinkedList<Node> nodes = new LinkedList<>();
-		nodes.add(new BasicNode("id1", null, (new BasicInstance("one", "gen.0", new double[] { 1.0, 1.5 }, null))));
-		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", "gen.0.0", new double[] { 0.0, -1.5 }, null))));
+		nodes.add(new BasicNode("id1", null, (new BasicInstance("one", GEN_0, new double[] { 1.0, 1.5 }, null))));
+		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", GEN_0_0, new double[] { 0.0, -1.5 }, null))));
 
 		h = new BasicHierarchy(node, nodes, new String[] {}, new HashMap<String, Integer>());
 	}
@@ -115,15 +119,15 @@ public class BasicHierarchyTest2 {
 	public void testBasicHierarchyNodeListOfQextendsNodeMapOfStringIntegerInt() {
 
 		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance("first", "gen.0", new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance("second", "gen.0", new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance("third", "gen.0", new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(FIRST, GEN_0, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(SECOND, GEN_0, new double[] { 1.5, 2.0 }, null));
+		instances.add(new BasicInstance(THIRD, GEN_0, new double[] { 0.0, 0.5 }, null));
 
 		BasicNode node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
 
 		LinkedList<Node> nodes = new LinkedList<>();
-		nodes.add(new BasicNode("id1", null, (new BasicInstance("one", "gen.0", new double[] { 1.0, 1.5 }, null))));
-		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", "gen.0.0", new double[] { 0.0, -1.5 }, null))));
+		nodes.add(new BasicNode("id1", null, (new BasicInstance("one", GEN_0, new double[] { 1.0, 1.5 }, null))));
+		nodes.add(new BasicNode("id2", null, (new BasicInstance("two", GEN_0_0, new double[] { 0.0, -1.5 }, null))));
 
 		h = new BasicHierarchy(node, nodes, new TreeMap<String, Integer>(), 1);
 	}
@@ -131,7 +135,7 @@ public class BasicHierarchyTest2 {
 	@Test
 	public void testGetRoot() {
 		assertNotEquals(null, h.getRoot());
-		assertEquals("gen.0", h.getRoot().getId());
+		assertEquals(GEN_0, h.getRoot().getId());
 	}
 
 	@Test
@@ -151,7 +155,7 @@ public class BasicHierarchyTest2 {
 
 	@Test
 	public void testGetClasses() {
-		assertArrayEquals(new String[] { "gen.0", "gen.0.0", "gen.0.0.0", "gen.0.1" }, h.getClasses());
+		assertArrayEquals(new String[] { GEN_0, GEN_0_0, "gen.0.0.0", "gen.0.1" }, h.getClasses());
 	}
 
 	@Test
@@ -161,8 +165,8 @@ public class BasicHierarchyTest2 {
 
 	@Test
 	public void testGetParticularClassCount() {
-		assertEquals(11, h.getParticularClassCount("gen.0", true));
-		assertEquals(4, h.getParticularClassCount("gen.0", false));
+		assertEquals(11, h.getParticularClassCount(GEN_0, true));
+		assertEquals(4, h.getParticularClassCount(GEN_0, false));
 		assertEquals(-1, h.getParticularClassCount("gem", false));
 	}
 
