@@ -1,12 +1,20 @@
 package basic_hierarchy.common;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +36,28 @@ public class HierarchyUtilsTest {
 	private static final String GEN_0 = "gen.0";
 	private static final String GEN_0_2 = "gen.0.2";
 	private static final String GEN_0_1_1 = "gen.0.1.1";
+	private static final String GEN_0_0_0 = "gen.0.0.0";
+
+	/**
+	 * Feature values' array is copied by reference when cloning Instances (memory
+	 * optimization)
+	 */
+	private static final boolean FEATURE_ARRAY_OPTIMIZATION = true;
+
+	Hierarchy alpha = null;
+	Hierarchy fourGroupsHierarchy;
 	private static Random random;
+
+	@BeforeClass
+	public static void init() {
+		random = new Random();
+	}
+
+	@Before
+	public void setup() {
+		alpha = generateHierarchy(3000, 2, GEN_0, GEN_0_0, GEN_0_1, GEN_0_2, GEN_0_3, GEN_0_1_1);
+		fourGroupsHierarchy = basic_hierarchy.TestCommon.getFourGroupsHierarchy();
+	}
 
 	@Test
 	public void testGetOneClusterHierarchy() {
@@ -51,24 +80,6 @@ public class HierarchyUtilsTest {
 		node.addChild(child);
 		assertEquals(2, HierarchyUtils.getNumberOfSubtreeGroups(node));
 
-	}
-
-	/**
-	 * Feature values' array is copied by reference when cloning Instances (memory
-	 * optimization)
-	 */
-	private static final boolean FEATURE_ARRAY_OPTIMIZATION = true;
-
-	Hierarchy alpha = null;
-
-	@BeforeClass
-	public static void init() {
-		random = new Random();
-	}
-
-	@Before
-	public void setup() {
-		alpha = generateHierarchy(3000, 2, GEN_0, GEN_0_0, GEN_0_1, GEN_0_2, GEN_0_3, GEN_0_1_1);
 	}
 
 	@Test
@@ -218,6 +229,160 @@ public class HierarchyUtilsTest {
 		}
 	}
 
+	@Test
+	public void testGetClassCountMap() {
+		Map<String, Integer> map = HierarchyUtils.getClassCountMap(fourGroupsHierarchy);
+		assertEquals(4, (int) map.get(GEN_0));
+		assertEquals(2, (int) map.get(GEN_0_0));
+		assertEquals(3, (int) map.get(GEN_0_0_0));
+		assertEquals(2, (int) map.get(GEN_0_1));
+	}
+
+	@Test
+	public void testComputeClassCountMap() {
+		Map<String, Integer> map = HierarchyUtils.computeClassCountMap(fourGroupsHierarchy.getRoot());
+		assertEquals(4, (int) map.get(GEN_0));
+		assertEquals(2, (int) map.get(GEN_0_0));
+		assertEquals(3, (int) map.get(GEN_0_0_0));
+		assertEquals(2, (int) map.get(GEN_0_1));
+	}
+
+	@Test
+	public void testFlattenHierarchy() {
+		assertEquals(4, fourGroupsHierarchy.getNumberOfGroups());
+		Hierarchy newL = HierarchyUtils.flattenHierarchy(fourGroupsHierarchy);
+		assertEquals(1, newL.getNumberOfGroups());
+	}
+
+	@Test
+	public void testToCSV() {
+		String s1 = "1.0;2.0\n" + "3.0;4.0\n" + "1.5;2.5\n" + "3.5;4.5\n" + "0.5;0.5\n" + "-0.5;-0.5\n" + "3.5;-0.5\n"
+				+ "0.25;0.75\n" + "-1.5;2.5\n" + "3.5;-4.5\n" + "-3.5;-4.5\n";
+		assertEquals(s1, HierarchyUtils.toCSV(fourGroupsHierarchy, false, false, false, false));
+
+		String s2 = "class;dimension_0;dimension_1\n" + "gen.0;1.0;2.0\n" + "gen.0;3.0;4.0\n" + "gen.0.0;1.5;2.5\n"
+				+ "gen.0.0;3.5;4.5\n" + "gen.0.0.0;0.5;0.5\n" + "gen.0.0.0;-0.5;-0.5\n" + "gen.0.0.0;3.5;-0.5\n"
+				+ "gen.0.0.0;0.25;0.75\n" + "gen.0.1;-1.5;2.5\n" + "gen.0.1;3.5;-4.5\n" + "gen.0.1;-3.5;-4.5\n";
+		assertEquals(s2, HierarchyUtils.toCSV(fourGroupsHierarchy, true, false, false, true));
+
+		String s3 = "true_class;dimension_0;dimension_1\n" + "gen.0;1.0;2.0\n" + "gen.0;3.0;4.0\n" + "gen.0.0;1.5;2.5\n"
+				+ "gen.0.0.0;3.5;4.5\n" + "gen.0.0.0;0.5;0.5\n" + "gen.0.0.0;-0.5;-0.5\n" + "gen.0.1;3.5;-0.5\n"
+				+ "gen.0;0.25;0.75\n" + "gen.0.0;-1.5;2.5\n" + "gen.0;3.5;-4.5\n" + "gen.0.1;-3.5;-4.5\n";
+		assertEquals(s3, HierarchyUtils.toCSV(fourGroupsHierarchy, false, true, false, true));
+
+		String s4 = "instance_name;dimension_0;dimension_1\n" + "11;1.0;2.0\n" + "12;3.0;4.0\n" + "21;1.5;2.5\n"
+				+ "22;3.5;4.5\n" + "41;0.5;0.5\n" + "42;-0.5;-0.5\n" + "43;3.5;-0.5\n" + "44;0.25;0.75\n"
+				+ "31;-1.5;2.5\n" + "32;3.5;-4.5\n" + "33;-3.5;-4.5\n";
+		assertEquals(s4, HierarchyUtils.toCSV(fourGroupsHierarchy, false, false, true, true));
+
+		String s5 = "dimension_0;dimension_1\n" + "1.0;2.0\n" + "3.0;4.0\n" + "1.5;2.5\n" + "3.5;4.5\n" + "0.5;0.5\n"
+				+ "-0.5;-0.5\n" + "3.5;-0.5\n" + "0.25;0.75\n" + "-1.5;2.5\n" + "3.5;-4.5\n" + "-3.5;-4.5\n";
+		assertEquals(s5, HierarchyUtils.toCSV(fourGroupsHierarchy, false, false, false, true));
+	}
+
+	@Test
+	public void testRemove() {
+		Hierarchy newH = HierarchyUtils.remove(fourGroupsHierarchy, GEN_0_1);
+		assertEquals(11, fourGroupsHierarchy.getOverallNumberOfInstances());
+		assertEquals(8, newH.getOverallNumberOfInstances());
+	}
+
+	@Test
+	public void testContains() {
+		assertEquals(true, HierarchyUtils.contains(fourGroupsHierarchy, fourGroupsHierarchy.getRoot()));
+		assertEquals(false, HierarchyUtils.contains(fourGroupsHierarchy, new BasicNode("nowe", null, false)));
+	}
+
+	@Test
+	public void testGetFirstInstance() {
+		assertEquals(fourGroupsHierarchy.getRoot().getNodeInstances().get(0),
+				HierarchyUtils.getFirstInstance(fourGroupsHierarchy));
+	}
+
+	@Test
+	public void testGetFeatureCount() {
+		assertEquals(2, HierarchyUtils.getFeatureCount(fourGroupsHierarchy));
+	}
+
+	@Test
+	public void testGetIDOfChildCluster() {
+		assertEquals(GEN_0_1, HierarchyUtils.getIDOfChildCluster(GEN_0, 1));
+	}
+
+	@Test
+	public void testGetAllNodes() {
+		List<Node> l = new ArrayList<>(Arrays.asList(fourGroupsHierarchy.getGroups()));
+		assertTrue(l.equals(HierarchyUtils.getAllNodes(fourGroupsHierarchy)));
+	}
+
+	@Test
+	public void testDropDimensionsDoubleArrayListOfInteger() {
+		double[] initDim = new double[] { 1.0, 2.0, 3.0 };
+		List<Integer> dimensionNumbers = new ArrayList<>();
+		dimensionNumbers.add(1);
+		double[] outDim = new double[] { 2.0 };
+		assertArrayEquals(outDim, HierarchyUtils.dropDimensions(initDim, dimensionNumbers), 0.0);
+	}
+
+	@Test
+	public void testDropDimensionsStringArrayListOfInteger() {
+		String[] initDim = new String[] { "1.0", "2.0", "3.0" };
+		List<Integer> dimensionNumbers = new ArrayList<>();
+		dimensionNumbers.add(1);
+		String[] outDim = new String[] { "2.0" };
+		assertArrayEquals(outDim, HierarchyUtils.dropDimensions(initDim, dimensionNumbers));
+	}
+
+	@Test
+	public void testWrapNode() {
+		Node node = fourGroupsHierarchy.getRoot().getChildren().getFirst();
+		assertNotNull(HierarchyUtils.wrapNode(fourGroupsHierarchy, node, false));
+	}
+
+	@Test
+	public void testRebase() {
+		Stream<Node> nodes = fourGroupsHierarchy.getRoot().getChildren().stream();
+		String oldId = GEN_0_0;
+		List<BasicNode> destNodes = new ArrayList<>();
+		HierarchyUtils.rebase(nodes, oldId, GEN_0, destNodes, true);
+		assertTrue(!destNodes.isEmpty());
+	}
+
+	@Test
+	public void testToMatrix() {
+		String s = "1.0;2.0\n" + "3.0;4.0\n" + "1.5;2.5\n" + "3.5;4.5\n" + "0.5;0.5\n" + "-0.5;-0.5\n" + "3.5;-0.5\n"
+				+ "0.25;0.75\n" + "-1.5;2.5\n" + "3.5;-4.5\n" + "-3.5;-4.5\n";
+
+		double[][] expected = new double[][] { { 1, 2 }, { 3, 4 }, { 1.5, 2.5 }, { 3.5, 4.5 }, { 0.5, 0.5 },
+				{ -0.5, -0.5 }, { 3.5, -0.5 }, { 0.25, 0.75 }, { -1.5, 2.5 }, { 3.5, -4.5 }, { -3.5, -4.5 } };
+		double[][] output = HierarchyUtils.toMatrix(fourGroupsHierarchy);
+
+		if (expected.length != output.length) {
+			fail("expected.length (" + expected.length + ") != (" + output.length + ")output.length");
+		}
+		for (int i = 0; i < expected.length; i++) {
+			assertArrayEquals(expected[i], output[i], 0.0);
+		}
+
+	}
+
+	@Test
+	public void testGetHierarchyNames() {
+		String[] names = new String[] { "dimension 1", "dimension 2" };
+		assertArrayEquals(names, HierarchyUtils.getHierarchyNames(fourGroupsHierarchy));
+	}
+
+	@Test
+	public void testSave() {
+		String path = "testOut.csv";
+		try {
+			HierarchyUtils.save(path, fourGroupsHierarchy, false, false, false, false);
+			File file = new File(path);
+			assertTrue(file.exists());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
+	}
 	// -------------------------------------------------------------
 
 	public BasicHierarchy generateHierarchy(int instanceCount, int dimCount, String... ids) {

@@ -4,3 +4,6 @@ src/META-INF/
 /.project
 /bin/
 /.classpath
+/coverage.xml
+/testOut.csv
+/junit.xml
