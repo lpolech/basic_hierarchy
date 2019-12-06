@@ -10,6 +10,7 @@ import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import basic_hierarchy.common.Constants;
@@ -32,7 +33,7 @@ public class HierarchyUtilsTest {
 	private static final String GEN_0 = "gen.0";
 	private static final String GEN_0_2 = "gen.0.2";
 	private static final String GEN_0_1_1 = "gen.0.1.1";
-	private Random random;
+	private static Random random;
 
 	@Test
 	public void testGetOneClusterHierarchy() {
@@ -65,10 +66,14 @@ public class HierarchyUtilsTest {
 
 	Hierarchy alpha = null;
 
+	@BeforeClass
+	public static void init() {
+		random = new Random();
+	}
+
 	@Before
 	public void setup() {
 		alpha = generateHierarchy(3000, 2, GEN_0, GEN_0_0, GEN_0_1, GEN_0_2, GEN_0_3, GEN_0_1_1);
-		random = new Random();
 	}
 
 	@Test

@@ -108,20 +108,19 @@ public class HierarchyUtils {
 		if (Constants.ROOT_ID.equals(nodeId)) {
 			// No point in replacing the root, just substitute the entire hierarchy.
 			return buildHierarchy(nodes, source.getDataNames(), useSubtree);
-		} else {
-			// Remove the merging point node from the dest hierarchy to replace it with the
-			// one from source
-			Optional<Node> optNode = Arrays.stream(dest.getGroups()).filter(n -> n.getId().equals(nodeId)).findAny();
-			if (optNode.isPresent()) {
-				dest = remove(dest, nodeId);
-			} else {
-				dest = clone(dest, useSubtree, null);
-			}
-
-			Arrays.stream(dest.getGroups()).forEach(n -> nodes.add((BasicNode) n));
-
-			return buildHierarchy(nodes, dest.getDataNames(), useSubtree);
 		}
+		// Remove the merging point node from the dest hierarchy to replace it with the
+		// one from source
+		Optional<Node> optNode = Arrays.stream(dest.getGroups()).filter(n -> n.getId().equals(nodeId)).findAny();
+		if (optNode.isPresent()) {
+			dest = remove(dest, nodeId);
+		} else {
+			dest = clone(dest, useSubtree, null);
+		}
+
+		Arrays.stream(dest.getGroups()).forEach(n -> nodes.add((BasicNode) n));
+
+		return buildHierarchy(nodes, dest.getDataNames(), useSubtree);
 	}
 
 	/**
