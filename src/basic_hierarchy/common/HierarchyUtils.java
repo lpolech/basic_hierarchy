@@ -31,6 +31,10 @@ public class HierarchyUtils {
 		throw new AssertionError("Attempted to instantiate a static class: " + getClass().getName());
 	}
 
+	public static String getIDOfChildCluster(String parentId, int childNumber) {
+		return parentId + Constants.HIERARCHY_BRANCH_SEPARATOR + childNumber;
+	}
+
 	public static int getNumberOfSubtreeGroups(Node subtreeRoot) {
 		Stack<Node> s = new Stack<>();
 		s.push(subtreeRoot);

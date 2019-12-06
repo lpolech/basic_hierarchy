@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import basic_hierarchy.common.Constants;
+import basic_hierarchy.common.HierarchyUtils;
 import basic_hierarchy.common.StringIdComparator;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
-import basic_hierarchy.test.TestCommon;
 
 public class BasicHierarchy implements Hierarchy {
 	private Node root;
@@ -233,7 +233,7 @@ public class BasicHierarchy implements Hierarchy {
 		int nodesCounter = 0;
 		for (Node n : this.getGroups()) {
 			if (!n.getNodeInstances().isEmpty()) {
-				Node nodeToAdd = new BasicNode(TestCommon.getIDOfChildCluster(Constants.ROOT_ID, nodesCounter++),
+				Node nodeToAdd = new BasicNode(HierarchyUtils.getIDOfChildCluster(Constants.ROOT_ID, nodesCounter++),
 						artificialRoot, new LinkedList<Node>(), new LinkedList<Instance>(), false);
 
 				for (Instance inst : n.getNodeInstances()) {

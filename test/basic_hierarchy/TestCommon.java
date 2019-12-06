@@ -1,9 +1,9 @@
-package basic_hierarchy.test;
+package basic_hierarchy;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import basic_hierarchy.common.Constants;
+import basic_hierarchy.common.HierarchyUtils;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
@@ -14,13 +14,9 @@ import basic_hierarchy.interfaces.Node;
 public class TestCommon {
 	public static final double DOUBLE_COMPARISION_DELTA = 1e-9;
 
-	public static String getIDOfChildCluster(String parentId, int childNumber) {
-		return parentId + Constants.HIERARCHY_BRANCH_SEPARATOR + childNumber;
-	}
-
 	public static Hierarchy getTwoGroupsHierarchy() {
 		String rootId = basic_hierarchy.common.Constants.ROOT_ID;
-		String childId = TestCommon.getIDOfChildCluster(rootId, 0);
+		String childId = HierarchyUtils.getIDOfChildCluster(rootId, 0);
 		LinkedList<Instance> firstClusterInstances = new LinkedList<>();
 		firstClusterInstances.add(new BasicInstance("11", rootId, new double[] { 1.0, 2.0 }, rootId));
 		firstClusterInstances.add(new BasicInstance("12", rootId, new double[] { 3.0, 4.0 }, rootId));
@@ -49,7 +45,7 @@ public class TestCommon {
 		BasicNode emptyRootCluster = new BasicNode(rootId, null, new LinkedList<Node>(), new LinkedList<Instance>(),
 				false);
 
-		String rootFirstChildId = TestCommon.getIDOfChildCluster(rootId, 0);
+		String rootFirstChildId = HierarchyUtils.getIDOfChildCluster(rootId, 0);
 		LinkedList<Instance> rootFirstChildClusterInstances = new LinkedList<>();
 		rootFirstChildClusterInstances
 				.add(new BasicInstance("11", rootFirstChildId, new double[] { 1.0, 2.0 }, rootFirstChildId));
@@ -59,14 +55,14 @@ public class TestCommon {
 				rootFirstChildClusterInstances, false);
 		emptyRootCluster.addChild(rootFirstChildCluster);
 
-		String emptyInternalClusterId = TestCommon.getIDOfChildCluster(rootFirstChildId, 0);
+		String emptyInternalClusterId = HierarchyUtils.getIDOfChildCluster(rootFirstChildId, 0);
 		BasicNode emptyInternalCluster = new BasicNode(emptyInternalClusterId, rootFirstChildCluster,
 				new LinkedList<Node>(), new LinkedList<Instance>(), false);
 
 		rootFirstChildCluster.addChild(emptyInternalCluster);
 
 		LinkedList<Instance> emptyInternalFirstChildInstances = new LinkedList<>();
-		String emptyInternalFirstChildId = TestCommon.getIDOfChildCluster(emptyInternalClusterId, 0);
+		String emptyInternalFirstChildId = HierarchyUtils.getIDOfChildCluster(emptyInternalClusterId, 0);
 		emptyInternalFirstChildInstances.add(new BasicInstance("21", emptyInternalFirstChildId,
 				new double[] { 1.5, 2.5 }, emptyInternalFirstChildId));
 		emptyInternalFirstChildInstances
@@ -90,9 +86,9 @@ public class TestCommon {
 
 	public static Hierarchy getFourGroupsHierarchy() {
 		String rootId = basic_hierarchy.common.Constants.ROOT_ID;
-		String rootFirstChildId = getIDOfChildCluster(rootId, 0);
-		String rootSecondChildId = getIDOfChildCluster(rootId, 1);
-		String rootFirstChildFirstChildId = getIDOfChildCluster(rootFirstChildId, 0);
+		String rootFirstChildId = HierarchyUtils.getIDOfChildCluster(rootId, 0);
+		String rootSecondChildId = HierarchyUtils.getIDOfChildCluster(rootId, 1);
+		String rootFirstChildFirstChildId = HierarchyUtils.getIDOfChildCluster(rootFirstChildId, 0);
 
 		LinkedList<Instance> rootClusterInstances = new LinkedList<>();
 		rootClusterInstances.add(new BasicInstance("11", rootId, new double[] { 1.0, 2.0 }, rootId));

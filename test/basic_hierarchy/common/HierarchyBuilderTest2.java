@@ -1,4 +1,4 @@
-package basic_hierarchy.test.common;
+package basic_hierarchy.common;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -10,14 +10,10 @@ import java.util.function.Consumer;
 
 import org.junit.Test;
 
-import basic_hierarchy.common.Constants;
-import basic_hierarchy.common.HierarchyBuilder;
-import basic_hierarchy.common.NodeIdComparator;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
-import basic_hierarchy.test.TestCommon;
 
 public class HierarchyBuilderTest2 {
 
@@ -94,7 +90,7 @@ public class HierarchyBuilderTest2 {
 	@Test
 	public void testRecalculateCentroids() {
 		String nodeId = Constants.ROOT_ID;
-		String firstChildNodeId = TestCommon.getIDOfChildCluster(nodeId, 0);
+		String firstChildNodeId = HierarchyUtils.getIDOfChildCluster(nodeId, 0);
 
 		LinkedList<Instance> instances = new LinkedList<>();
 		instances.add(new BasicInstance(FIRST, nodeId, new double[] { 0.0, 0.5 }, null));

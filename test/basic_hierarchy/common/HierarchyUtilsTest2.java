@@ -1,4 +1,4 @@
-package basic_hierarchy.test.common;
+package basic_hierarchy.common;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,10 +6,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import basic_hierarchy.common.HierarchyUtils;
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
-import basic_hierarchy.test.TestCommon;
 
 public class HierarchyUtilsTest2 {
 
@@ -20,7 +18,7 @@ public class HierarchyUtilsTest2 {
 	Hierarchy h;
 
 	public HierarchyUtilsTest2() {
-		h = TestCommon.getFourGroupsHierarchy();
+		h = basic_hierarchy.TestCommon.getFourGroupsHierarchy();
 	}
 
 	@Test

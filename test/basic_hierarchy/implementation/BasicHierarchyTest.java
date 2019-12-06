@@ -1,4 +1,4 @@
-package basic_hierarchy.test.implementation;
+package basic_hierarchy.implementation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -8,17 +8,17 @@ import java.util.LinkedList;
 
 import org.junit.Test;
 
+import basic_hierarchy.TestCommon;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyUtils;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
-import basic_hierarchy.test.TestCommon;
 
 public class BasicHierarchyTest {
 	@Test
 	public void generateFlatClusteringFromHierarchy() {
-		Hierarchy h = TestCommon.getFourGroupsHierarchy();
+		Hierarchy h = basic_hierarchy.TestCommon.getFourGroupsHierarchy();
 		Hierarchy flat = h.getFlatClusteringWithCommonEmptyRoot();
 
 		assertEquals(h.getGroups().length + 1l, flat.getGroups().length);
@@ -27,7 +27,7 @@ public class BasicHierarchyTest {
 		for (int i = 0; i < flat.getRoot().getChildren().size(); i++) {
 			Node n = flat.getRoot().getChildren().get(i);
 			assertTrue(n.getChildren().isEmpty());
-			assertEquals(n.getId(), TestCommon.getIDOfChildCluster(Constants.ROOT_ID, i));
+			assertEquals(n.getId(), HierarchyUtils.getIDOfChildCluster(Constants.ROOT_ID, i));
 			assertEquals(flat.getRoot(), n.getParent());
 
 //          find corresponding child in original hierarchy in compare content
@@ -56,7 +56,7 @@ public class BasicHierarchyTest {
 		for (int i = 0; i < flat.getRoot().getChildren().size(); i++) {
 			Node n = flat.getRoot().getChildren().get(i);
 			assertTrue(n.getChildren().isEmpty());
-			assertEquals(n.getId(), TestCommon.getIDOfChildCluster(Constants.ROOT_ID, i));
+			assertEquals(n.getId(), HierarchyUtils.getIDOfChildCluster(Constants.ROOT_ID, i));
 			assertEquals(flat.getRoot(), n.getParent());
 
 //          find corresponding child in original hierarchy in compare content

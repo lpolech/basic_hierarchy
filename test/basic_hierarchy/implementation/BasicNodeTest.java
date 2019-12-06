@@ -1,4 +1,4 @@
-package basic_hierarchy.test.implementation;
+package basic_hierarchy.implementation;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -12,12 +12,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import basic_hierarchy.TestCommon;
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.implementation.BasicInstance;
-import basic_hierarchy.implementation.BasicNode;
+import basic_hierarchy.common.HierarchyUtils;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
-import basic_hierarchy.test.TestCommon;
 
 public class BasicNodeTest {
 	private static final String THIRD = "third";
@@ -45,7 +44,7 @@ public class BasicNodeTest {
 	@Before
 	public void setUp() {
 		String nodeId = Constants.ROOT_ID;
-		String firstChildNodeId = TestCommon.getIDOfChildCluster(nodeId, 0);
+		String firstChildNodeId = HierarchyUtils.getIDOfChildCluster(nodeId, 0);
 
 		LinkedList<Instance> instances = new LinkedList<>();
 		instances.add(new BasicInstance(FIRST, nodeId, new double[] { 0.0, 0.5 }, null));

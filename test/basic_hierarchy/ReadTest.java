@@ -1,4 +1,5 @@
-package basic_hierarchy.test;
+package basic_hierarchy;
+
 
 import static org.junit.Assert.assertEquals;
 

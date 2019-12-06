@@ -1,4 +1,4 @@
-package basic_hierarchy.test.implementation;
+package basic_hierarchy.implementation;
 
 import java.util.ArrayList;
 import java.util.Arrays;

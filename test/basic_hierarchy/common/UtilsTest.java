@@ -1,10 +1,8 @@
-package basic_hierarchy.test.common;
+package basic_hierarchy.common;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
-import basic_hierarchy.common.Utils;
 
 public class UtilsTest {
 

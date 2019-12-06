@@ -1,4 +1,4 @@
-package basic_hierarchy.test.common;
+package basic_hierarchy.common;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,17 +13,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import basic_hierarchy.common.Constants;
-import basic_hierarchy.common.HierarchyBuilder;
-import basic_hierarchy.common.HierarchyUtils;
-import basic_hierarchy.common.NodeIdComparator;
 import basic_hierarchy.implementation.BasicHierarchy;
 import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
-import basic_hierarchy.test.TestCommon;
 
 public class HierarchyUtilsTest {
 
@@ -37,7 +32,7 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testGetOneClusterHierarchy() {
-		Hierarchy h = TestCommon.getTwoGroupsHierarchy();
+		Hierarchy h = basic_hierarchy.TestCommon.getTwoGroupsHierarchy();
 		assertEquals(2, h.getNumberOfGroups());
 
 		Hierarchy h2 = HierarchyUtils.getOneClusterHierarchy(h);
@@ -49,7 +44,7 @@ public class HierarchyUtilsTest {
 		BasicNode node;
 		BasicNode child;
 		String nodeId = Constants.ROOT_ID;
-		String firstChildNodeId = TestCommon.getIDOfChildCluster(nodeId, 0);
+		String firstChildNodeId = HierarchyUtils.getIDOfChildCluster(nodeId, 0);
 
 		node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), new LinkedList<>(), false);
 		child = new BasicNode(firstChildNodeId, node, new LinkedList<Node>(), new LinkedList<>(), false);

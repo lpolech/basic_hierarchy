@@ -1,4 +1,4 @@
-package basic_hierarchy.test.implementation;
+package basic_hierarchy.implementation;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -15,13 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import basic_hierarchy.common.Constants;
-import basic_hierarchy.implementation.BasicHierarchy;
-import basic_hierarchy.implementation.BasicInstance;
-import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
-import basic_hierarchy.test.TestCommon;
 
 public class BasicHierarchyTest2 {
 
@@ -48,7 +44,7 @@ public class BasicHierarchyTest2 {
 	}
 
 	public BasicHierarchyTest2() {
-		h = TestCommon.getFourGroupsHierarchy();
+		h = basic_hierarchy.TestCommon.getFourGroupsHierarchy();
 		flat = h.getFlatClusteringWithCommonEmptyRoot();
 	}
 
