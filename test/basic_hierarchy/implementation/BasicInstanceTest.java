@@ -1,18 +1,17 @@
 package basic_hierarchy.implementation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
-import basic_hierarchy.implementation.BasicInstance;
 
 public class BasicInstanceTest {
 
 	private static final String GEN_0 = "gen.0";
 	BasicInstance basIn;
-	
+
 	public BasicInstanceTest() {
-		basIn = new BasicInstance("inst", GEN_0, new double[]{0.0, 0.5}, null);
+		basIn = new BasicInstance("inst", GEN_0, new double[] { 0.0, 0.5 }, null);
 	}
 
 	@Test
@@ -29,14 +28,14 @@ public class BasicInstanceTest {
 
 	@Test
 	public void testGetData() {
-		assertArrayEquals(new double[]{0.0, 0.5}, basIn.getData(), 0.0);
+		assertArrayEquals(new double[] { 0.0, 0.5 }, basIn.getData(), 0.0);
 	}
 
 	@Test
 	public void testSetData() {
-		assertArrayEquals(new double[]{0.0, 0.5}, basIn.getData(), 0.0);
-		basIn.setData(new double[]{1.0, 1.5});
-		assertArrayEquals(new double[]{1.0, 1.5}, basIn.getData(), 0.0);
+		assertArrayEquals(new double[] { 0.0, 0.5 }, basIn.getData(), 0.0);
+		basIn.setData(new double[] { 1.0, 1.5 });
+		assertArrayEquals(new double[] { 1.0, 1.5 }, basIn.getData(), 0.0);
 	}
 
 	@Test

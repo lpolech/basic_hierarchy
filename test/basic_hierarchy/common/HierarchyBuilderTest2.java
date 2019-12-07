@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 import org.junit.Test;
 
@@ -14,6 +14,7 @@ import basic_hierarchy.implementation.BasicInstance;
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
+import javafx.util.Pair;
 
 public class HierarchyBuilderTest2 {
 
@@ -39,20 +40,8 @@ public class HierarchyBuilderTest2 {
 
 	@Test
 	public void testBuildCompleteHierarchy() {
-		String nodeId = Constants.ROOT_ID;
-
-		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance(FIRST, nodeId, new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance("second", nodeId, new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance("third", nodeId, new double[] { 0.0, 0.5 }, null));
-
-		LinkedList<Instance> childInstances = new LinkedList<>();
-		BasicNode node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
-		BasicNode child = new BasicNode(GEN_0_0, null, new LinkedList<Node>(), childInstances, false);
-
-		LinkedList<BasicNode> nodes = new LinkedList<>();
-		nodes.add(child);
-		nodes.add(node);
+		Pair<LinkedList<BasicNode>, BasicNode> pair = crateNodes();
+		LinkedList<BasicNode> nodes = pair.getKey();
 
 		List<? extends Node> newNodes = hier.buildCompleteHierarchy(null, nodes, true, false);
 		assertEquals(3, newNodes.size());
@@ -89,27 +78,17 @@ public class HierarchyBuilderTest2 {
 
 	@Test
 	public void testRecalculateCentroids() {
-		String nodeId = Constants.ROOT_ID;
-		String firstChildNodeId = HierarchyUtils.getIDOfChildCluster(nodeId, 0);
+		Pair<LinkedList<BasicNode>, BasicNode> pair = crateNodes();
+		BasicNode node = pair.getValue();
+		LinkedList<BasicNode> nodes = pair.getKey();
 
-		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance(FIRST, nodeId, new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance("second", nodeId, new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance("third", nodeId, new double[] { 0.0, 0.5 }, null));
-
-		LinkedList<Instance> childInstances = new LinkedList<>();
-		BasicNode node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
-		BasicNode child = new BasicNode(GEN_0_0, null, new LinkedList<Node>(), childInstances, false);
-
-		LinkedList<BasicNode> nodes = new LinkedList<>();
-		nodes.add(node);
-		nodes.add(child);
-		Consumer<Integer> progressReporter = e -> {
-		};
-
+		String firstChildNodeId = HierarchyUtils.getIDOfChildCluster(Constants.ROOT_ID, 0);
 		node.setRepresentation(new BasicInstance(FIRST, firstChildNodeId, new double[] { 0.3, -0.5 }, null));
 
 		assertArrayEquals(new double[] { 0.3, -0.5 }, node.getNodeRepresentation().getData(), 0.0);
+
+		IntConsumer progressReporter = e -> {
+		};
 		HierarchyBuilder.recalculateCentroids(nodes, false, progressReporter);
 		assertArrayEquals(new double[] { 0.5, 1.0 }, node.getNodeRepresentation().getData(), 0.0);
 	}
@@ -123,7 +102,7 @@ public class HierarchyBuilderTest2 {
 		LinkedList<BasicNode> nodes = new LinkedList<>();
 		nodes.add(node);
 		nodes.add(child);
-		Consumer<Integer> progressReporter = e -> {
+		IntConsumer progressReporter = e -> {
 		};
 
 		assertNotEquals(node, child.getParent());
@@ -180,6 +159,25 @@ public class HierarchyBuilderTest2 {
 		assertEquals(false, HierarchyBuilder.areIdsAncestorAndDescendant(GEN_0, "gen0.1b1"));
 		assertEquals(true, HierarchyBuilder.areIdsAncestorAndDescendant("gen", "gen.1.b1"));
 		assertEquals(false, HierarchyBuilder.areIdsAncestorAndDescendant("gen", "gen1.b1"));
+	}
+
+	private Pair<LinkedList<BasicNode>, BasicNode> crateNodes() {
+		String nodeId = Constants.ROOT_ID;
+
+		LinkedList<Instance> instances = new LinkedList<>();
+		instances.add(new BasicInstance(FIRST, nodeId, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance("second", nodeId, new double[] { 1.5, 2.0 }, null));
+		instances.add(new BasicInstance("third", nodeId, new double[] { 0.0, 0.5 }, null));
+
+		LinkedList<Instance> childInstances = new LinkedList<>();
+		BasicNode rootNode = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
+		BasicNode child = new BasicNode(GEN_0_0, null, new LinkedList<Node>(), childInstances, false);
+
+		LinkedList<BasicNode> nodes = new LinkedList<>();
+		nodes.add(rootNode);
+		nodes.add(child);
+
+		return new Pair<>(nodes, rootNode);
 	}
 
 }

@@ -1,6 +1,11 @@
 package basic_hierarchy.common;
 
 public class Utils {
+
+	private Utils() {
+		throw new AssertionError("Static class");
+	}
+
 	/*
 	 * Applicable only to positive numbers
 	 */

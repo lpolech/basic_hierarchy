@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -50,7 +51,7 @@ public class HierarchyUtilsTest {
 
 	@BeforeClass
 	public static void init() {
-		random = new Random();
+		random = new SecureRandom();
 	}
 
 	@Before
@@ -256,27 +257,27 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testToCSV() {
-		String s1 = "1.0;2.0\n" + "3.0;4.0\n" + "1.5;2.5\n" + "3.5;4.5\n" + "0.5;0.5\n" + "-0.5;-0.5\n" + "3.5;-0.5\n"
-				+ "0.25;0.75\n" + "-1.5;2.5\n" + "3.5;-4.5\n" + "-3.5;-4.5\n";
+		String s1 = "1.0;2.0\n3.0;4.0\n1.5;2.5\n3.5;4.5\n0.5;0.5\n-0.5;-0.5\n3.5;-0.5\n"
+				+ "0.25;0.75\n-1.5;2.5\n3.5;-4.5\n-3.5;-4.5\n";
 		assertEquals(s1, HierarchyUtils.toCSV(fourGroupsHierarchy, false, false, false, false));
 
-		String s2 = "class;dimension_0;dimension_1\n" + "gen.0;1.0;2.0\n" + "gen.0;3.0;4.0\n" + "gen.0.0;1.5;2.5\n"
-				+ "gen.0.0;3.5;4.5\n" + "gen.0.0.0;0.5;0.5\n" + "gen.0.0.0;-0.5;-0.5\n" + "gen.0.0.0;3.5;-0.5\n"
-				+ "gen.0.0.0;0.25;0.75\n" + "gen.0.1;-1.5;2.5\n" + "gen.0.1;3.5;-4.5\n" + "gen.0.1;-3.5;-4.5\n";
+		String s2 = "class;dimension_0;dimension_1\ngen.0;1.0;2.0\ngen.0;3.0;4.0\ngen.0.0;1.5;2.5\n"
+				+ "gen.0.0;3.5;4.5\ngen.0.0.0;0.5;0.5\ngen.0.0.0;-0.5;-0.5\ngen.0.0.0;3.5;-0.5\n"
+				+ "gen.0.0.0;0.25;0.75\ngen.0.1;-1.5;2.5\ngen.0.1;3.5;-4.5\ngen.0.1;-3.5;-4.5\n";
 		assertEquals(s2, HierarchyUtils.toCSV(fourGroupsHierarchy, true, false, false, true));
 
-		String s3 = "true_class;dimension_0;dimension_1\n" + "gen.0;1.0;2.0\n" + "gen.0;3.0;4.0\n" + "gen.0.0;1.5;2.5\n"
-				+ "gen.0.0.0;3.5;4.5\n" + "gen.0.0.0;0.5;0.5\n" + "gen.0.0.0;-0.5;-0.5\n" + "gen.0.1;3.5;-0.5\n"
-				+ "gen.0;0.25;0.75\n" + "gen.0.0;-1.5;2.5\n" + "gen.0;3.5;-4.5\n" + "gen.0.1;-3.5;-4.5\n";
+		String s3 = "true_class;dimension_0;dimension_1\ngen.0;1.0;2.0\ngen.0;3.0;4.0\ngen.0.0;1.5;2.5\n"
+				+ "gen.0.0.0;3.5;4.5\ngen.0.0.0;0.5;0.5\ngen.0.0.0;-0.5;-0.5\ngen.0.1;3.5;-0.5\n"
+				+ "gen.0;0.25;0.75\ngen.0.0;-1.5;2.5\ngen.0;3.5;-4.5\ngen.0.1;-3.5;-4.5\n";
 		assertEquals(s3, HierarchyUtils.toCSV(fourGroupsHierarchy, false, true, false, true));
 
-		String s4 = "instance_name;dimension_0;dimension_1\n" + "11;1.0;2.0\n" + "12;3.0;4.0\n" + "21;1.5;2.5\n"
-				+ "22;3.5;4.5\n" + "41;0.5;0.5\n" + "42;-0.5;-0.5\n" + "43;3.5;-0.5\n" + "44;0.25;0.75\n"
-				+ "31;-1.5;2.5\n" + "32;3.5;-4.5\n" + "33;-3.5;-4.5\n";
+		String s4 = "instance_name;dimension_0;dimension_1\n11;1.0;2.0\n12;3.0;4.0\n21;1.5;2.5\n"
+				+ "22;3.5;4.5\n41;0.5;0.5\n42;-0.5;-0.5\n43;3.5;-0.5\n44;0.25;0.75\n"
+				+ "31;-1.5;2.5\n32;3.5;-4.5\n33;-3.5;-4.5\n";
 		assertEquals(s4, HierarchyUtils.toCSV(fourGroupsHierarchy, false, false, true, true));
 
-		String s5 = "dimension_0;dimension_1\n" + "1.0;2.0\n" + "3.0;4.0\n" + "1.5;2.5\n" + "3.5;4.5\n" + "0.5;0.5\n"
-				+ "-0.5;-0.5\n" + "3.5;-0.5\n" + "0.25;0.75\n" + "-1.5;2.5\n" + "3.5;-4.5\n" + "-3.5;-4.5\n";
+		String s5 = "dimension_0;dimension_1\n1.0;2.0\n3.0;4.0\n1.5;2.5\n3.5;4.5\n0.5;0.5\n"
+				+ "-0.5;-0.5\n3.5;-0.5\n0.25;0.75\n-1.5;2.5\n3.5;-4.5\n-3.5;-4.5\n";
 		assertEquals(s5, HierarchyUtils.toCSV(fourGroupsHierarchy, false, false, false, true));
 	}
 
@@ -350,9 +351,6 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testToMatrix() {
-		String s = "1.0;2.0\n" + "3.0;4.0\n" + "1.5;2.5\n" + "3.5;4.5\n" + "0.5;0.5\n" + "-0.5;-0.5\n" + "3.5;-0.5\n"
-				+ "0.25;0.75\n" + "-1.5;2.5\n" + "3.5;-4.5\n" + "-3.5;-4.5\n";
-
 		double[][] expected = new double[][] { { 1, 2 }, { 3, 4 }, { 1.5, 2.5 }, { 3.5, 4.5 }, { 0.5, 0.5 },
 				{ -0.5, -0.5 }, { 3.5, -0.5 }, { 0.25, 0.75 }, { -1.5, 2.5 }, { 3.5, -4.5 }, { -3.5, -4.5 } };
 		double[][] output = HierarchyUtils.toMatrix(fourGroupsHierarchy);
@@ -425,7 +423,7 @@ public class HierarchyUtilsTest {
 	public BasicInstance generateInstance(String id, int dimCount) {
 		double[] data = new double[dimCount];
 		for (int i = 0; i < dimCount; i++) {
-			data[i] = Math.random() * 2 - 1;
+			data[i] = random.nextDouble() * 2 - 1;
 		}
 		return new BasicInstance(null, id, data);
 	}

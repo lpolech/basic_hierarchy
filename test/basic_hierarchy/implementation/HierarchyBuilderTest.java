@@ -1,5 +1,7 @@
 package basic_hierarchy.implementation;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,7 +14,6 @@ import org.junit.Test;
 import basic_hierarchy.common.AlphanumComparator;
 import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
-import basic_hierarchy.implementation.BasicNode;
 
 public class HierarchyBuilderTest {
 	private static final String GEN_0_0_10 = "gen.0.0.10";
@@ -41,8 +42,7 @@ public class HierarchyBuilderTest {
 	@Test
 	public void idOrdering() {
 		// Test that the sorting algorithm works as we expect it to.
-		String[] expected = { "gen.0.0.1", "gen.0.0.1.0", "gen.0.0.2", GEN_0_0_10, "gen.0.1", "gen.0.2",
-				"gen.0.10.0" };
+		String[] expected = { "gen.0.0.1", "gen.0.0.1.0", "gen.0.0.2", GEN_0_0_10, "gen.0.1", "gen.0.2", "gen.0.10.0" };
 
 		String[] sorted = Arrays.copyOf(expected, expected.length);
 		Arrays.sort(sorted, new AlphanumComparator());
@@ -70,18 +70,40 @@ public class HierarchyBuilderTest {
 		BasicNode leaf2 = findNodeWithId(nodes, "gen.0.0.11.5");
 
 		// Assert child -> parent relations
-		Assert.assertEquals(root, artificial0.getParent());
-		Assert.assertEquals(artificial0, artificial1.getParent());
-		Assert.assertEquals(artificial0, leaf0.getParent());
-		Assert.assertEquals(artificial1, leaf1.getParent());
-		Assert.assertEquals(artificial1, leaf2.getParent());
-
 		// Assert parent -> child relations
+		if (artificial0 == null)
+			fail("artificial0 is null");
+		else {
+			Assert.assertEquals(root, artificial0.getParent());
+			Assert.assertTrue(artificial0.getChildren().contains(artificial1));
+			Assert.assertTrue(artificial0.getChildren().contains(leaf0));
+		}
+
 		Assert.assertTrue(root.getChildren().contains(artificial0));
-		Assert.assertTrue(artificial0.getChildren().contains(artificial1));
-		Assert.assertTrue(artificial0.getChildren().contains(leaf0));
-		Assert.assertTrue(artificial1.getChildren().contains(leaf1));
-		Assert.assertTrue(artificial1.getChildren().contains(leaf2));
+
+		if (artificial1 == null)
+			fail("artificial1 is null");
+		else {
+			Assert.assertEquals(artificial0, artificial1.getParent());
+			Assert.assertTrue(artificial1.getChildren().contains(leaf1));
+			Assert.assertTrue(artificial1.getChildren().contains(leaf2));
+		}
+
+		if (leaf0 == null)
+			fail("leaf0 is null");
+		else
+			Assert.assertEquals(artificial0, leaf0.getParent());
+
+		if (leaf1 == null)
+			fail("leaf1 is null");
+		else
+			Assert.assertEquals(artificial1, leaf1.getParent());
+
+		if (leaf2 == null)
+			fail("leaf2 is null");
+		else
+			Assert.assertEquals(artificial1, leaf2.getParent());
+
 	}
 
 	@Test
@@ -114,7 +136,10 @@ public class HierarchyBuilderTest {
 
 		Assert.assertEquals(4, gen11.size());
 
-		Assert.assertTrue(artificial1.getChildren().containsAll(gen11));
+		if (artificial1 == null)
+			fail("artificial1 is null");
+		else
+			Assert.assertTrue(artificial1.getChildren().containsAll(gen11));
 
 		for (BasicNode leaf : gen11) {
 			Assert.assertEquals(artificial1, leaf.getParent());

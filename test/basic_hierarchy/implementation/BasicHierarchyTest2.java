@@ -3,6 +3,7 @@ package basic_hierarchy.implementation;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -67,13 +68,14 @@ public class BasicHierarchyTest2 {
 		nodes2.add(new BasicNode("id1", null, null));
 
 		Hierarchy h2 = new BasicHierarchy(nodes2, null);
+		assertNotNull(h2);
 
 		LinkedList<Node> nodes3 = new LinkedList<>();
 		nodes3.add(new BasicNode("id1", null, (new BasicInstance("one", GEN_0, new double[] { 1.0, 1.5 }, null))));
 		nodes3.add(new BasicNode("id2", null, (new BasicInstance("two", GEN_0_0, new double[] { 0.0, -1.5 }, null))));
 
 		Hierarchy h3 = new BasicHierarchy(nodes3, new String[] {});
-
+		assertNotNull(h3);
 	}
 
 	@Test

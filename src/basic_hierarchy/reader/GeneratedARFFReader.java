@@ -29,8 +29,7 @@ public class GeneratedARFFReader implements DataReader {
 			boolean withColumnHeaders, boolean fixBreadthGaps, boolean useSubtree) throws IOException {
 		File inputFile = new File(filePath);
 		if (!inputFile.exists() && inputFile.isDirectory()) {
-			System.err.println(
-					"Cannot access to file: " + filePath + ". Does it exist and is it a " + "weka ARFF file?\n");
+			log.error("Cannot access to file: {}. Does it exist and is it a weka ARFF file?\n", filePath);
 			System.exit(1);
 		}
 		DataSource source = null;
@@ -46,8 +45,9 @@ public class GeneratedARFFReader implements DataReader {
 		data.setClassIndex(Constants.INDEX_OF_ASSIGN_CLASS_IN_WEKA_INSTANCE);
 		int assignClassIndex = data.classIndex();
 
-		System.out.println("Assign class attribute name is: " + data.classAttribute().name() + "\nNumber of classes: "
-				+ data.numClasses());
+		if (log.isInfoEnabled())
+			log.info("Assign class attribute name is: {}\nNumber of classes: {}", data.classAttribute().name(),
+					data.numClasses());
 
 		BasicNode root = null;
 		ArrayList<BasicNode> nodes = new ArrayList<>();

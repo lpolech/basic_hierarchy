@@ -12,6 +12,11 @@ import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
 
 public class TestCommon {
+
+	private TestCommon() {
+		throw new AssertionError("Static class");
+	}
+
 	public static final double DOUBLE_COMPARISION_DELTA = 1e-9;
 
 	public static Hierarchy getTwoGroupsHierarchy() {

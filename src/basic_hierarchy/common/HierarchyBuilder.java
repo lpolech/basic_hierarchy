@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 import basic_hierarchy.implementation.BasicNode;
 import basic_hierarchy.interfaces.Hierarchy;
@@ -25,7 +25,7 @@ public class HierarchyBuilder {
 	private volatile int progress = 0;
 	private volatile String statusMsg = "";
 
-	private Consumer<Integer> progressReporter = p -> progress = p;
+	private IntConsumer progressReporter = p -> progress = p;
 
 	/**
 	 * @return value representing progress of current operation, values [0, 100], or
@@ -133,8 +133,7 @@ public class HierarchyBuilder {
 	 * @param progressReporter function used to report progress of this operation.
 	 *                         Can be null.
 	 */
-	public static void recalculateCentroids(List<BasicNode> nodes, boolean useSubtree,
-			Consumer<Integer> progressReporter) {
+	public static void recalculateCentroids(List<BasicNode> nodes, boolean useSubtree, IntConsumer progressReporter) {
 		if (progressReporter != null)
 			progressReporter.accept(0);
 		long total = nodes.size();
@@ -168,7 +167,7 @@ public class HierarchyBuilder {
 	 * @param progressReporter function used to report progress of this operation.
 	 *                         Can be null.
 	 */
-	public static void createParentChildRelations(List<BasicNode> nodes, Consumer<Integer> progressReporter) {
+	public static void createParentChildRelations(List<BasicNode> nodes, IntConsumer progressReporter) {
 		if (progressReporter != null)
 			progressReporter.accept(0);
 
@@ -219,7 +218,7 @@ public class HierarchyBuilder {
 	 * @return collection of artificial nodes created as a result of this method
 	 */
 	public static List<BasicNode> fixDepthGaps(List<BasicNode> nodes, String rootId, boolean useSubtree,
-			Consumer<Integer> progressReporter) {
+			IntConsumer progressReporter) {
 		if (progressReporter != null)
 			progressReporter.accept(0);
 
