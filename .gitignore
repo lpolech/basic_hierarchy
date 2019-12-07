@@ -7,3 +7,5 @@ src/META-INF/
 /coverage.xml
 /testOut.csv
 /junit.xml
+/sonar-project.properties
+.scannerwork
