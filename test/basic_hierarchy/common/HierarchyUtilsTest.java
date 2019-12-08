@@ -1,5 +1,12 @@
 package basic_hierarchy.common;
 
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0_0;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_1;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_1_1;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_2;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_3;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -31,14 +38,6 @@ import basic_hierarchy.interfaces.Node;
 
 public class HierarchyUtilsTest {
 
-	private static final String GEN_0_3 = "gen.0.3";
-	private static final String GEN_0_1 = "gen.0.1";
-	private static final String GEN_0_0 = "gen.0.0";
-	private static final String GEN_0 = "gen.0";
-	private static final String GEN_0_2 = "gen.0.2";
-	private static final String GEN_0_1_1 = "gen.0.1.1";
-	private static final String GEN_0_0_0 = "gen.0.0.0";
-
 	/**
 	 * Feature values' array is copied by reference when cloning Instances (memory
 	 * optimization)
@@ -56,7 +55,7 @@ public class HierarchyUtilsTest {
 
 	@Before
 	public void setup() {
-		alpha = generateHierarchy(3000, 2, GEN_0, GEN_0_0, GEN_0_1, GEN_0_2, GEN_0_3, GEN_0_1_1);
+		alpha = generateHierarchy(3000, 2, NODE_ID_GEN_0, NODE_ID_GEN_0_0, NODE_ID_GEN_0_1, NODE_ID_GEN_0_2, NODE_ID_GEN_0_3, NODE_ID_GEN_0_1_1);
 		fourGroupsHierarchy = basic_hierarchy.TestCommon.getFourGroupsHierarchy();
 	}
 
@@ -93,17 +92,17 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testSubHierarchy() {
-		testSubHierarchy(alpha, GEN_0_2, Constants.ROOT_ID);
-		testSubHierarchy(alpha, GEN_0_1_1, Constants.ROOT_ID);
+		testSubHierarchy(alpha, NODE_ID_GEN_0_2, Constants.ROOT_ID);
+		testSubHierarchy(alpha, NODE_ID_GEN_0_1_1, Constants.ROOT_ID);
 	}
 
 	@Test
 	public void testMerge() {
-		Hierarchy test = HierarchyUtils.subHierarchy(alpha, GEN_0_2, Constants.ROOT_ID);
-		testMerge(alpha, test, GEN_0_2);
+		Hierarchy test = HierarchyUtils.subHierarchy(alpha, NODE_ID_GEN_0_2, Constants.ROOT_ID);
+		testMerge(alpha, test, NODE_ID_GEN_0_2);
 
-		test = HierarchyUtils.subHierarchy(alpha, GEN_0_1_1, "gen.0.8.4.3");
-		testMerge(alpha, test, GEN_0_1_1);
+		test = HierarchyUtils.subHierarchy(alpha, NODE_ID_GEN_0_1_1, "gen.0.8.4.3");
+		testMerge(alpha, test, NODE_ID_GEN_0_1_1);
 	}
 
 	// -------------------------------------------------------------
@@ -233,19 +232,19 @@ public class HierarchyUtilsTest {
 	@Test
 	public void testGetClassCountMap() {
 		Map<String, Integer> map = HierarchyUtils.getClassCountMap(fourGroupsHierarchy);
-		assertEquals(4, (int) map.get(GEN_0));
-		assertEquals(2, (int) map.get(GEN_0_0));
-		assertEquals(3, (int) map.get(GEN_0_0_0));
-		assertEquals(2, (int) map.get(GEN_0_1));
+		assertEquals(4, (int) map.get(NODE_ID_GEN_0));
+		assertEquals(2, (int) map.get(NODE_ID_GEN_0_0));
+		assertEquals(3, (int) map.get(NODE_ID_GEN_0_0_0));
+		assertEquals(2, (int) map.get(NODE_ID_GEN_0_1));
 	}
 
 	@Test
 	public void testComputeClassCountMap() {
 		Map<String, Integer> map = HierarchyUtils.computeClassCountMap(fourGroupsHierarchy.getRoot());
-		assertEquals(4, (int) map.get(GEN_0));
-		assertEquals(2, (int) map.get(GEN_0_0));
-		assertEquals(3, (int) map.get(GEN_0_0_0));
-		assertEquals(2, (int) map.get(GEN_0_1));
+		assertEquals(4, (int) map.get(NODE_ID_GEN_0));
+		assertEquals(2, (int) map.get(NODE_ID_GEN_0_0));
+		assertEquals(3, (int) map.get(NODE_ID_GEN_0_0_0));
+		assertEquals(2, (int) map.get(NODE_ID_GEN_0_1));
 	}
 
 	@Test
@@ -283,7 +282,7 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testRemove() {
-		Hierarchy newH = HierarchyUtils.remove(fourGroupsHierarchy, GEN_0_1);
+		Hierarchy newH = HierarchyUtils.remove(fourGroupsHierarchy, NODE_ID_GEN_0_1);
 		assertEquals(11, fourGroupsHierarchy.getOverallNumberOfInstances());
 		assertEquals(8, newH.getOverallNumberOfInstances());
 	}
@@ -307,7 +306,7 @@ public class HierarchyUtilsTest {
 
 	@Test
 	public void testGetIDOfChildCluster() {
-		assertEquals(GEN_0_1, HierarchyUtils.getIDOfChildCluster(GEN_0, 1));
+		assertEquals(NODE_ID_GEN_0_1, HierarchyUtils.getIDOfChildCluster(NODE_ID_GEN_0, 1));
 	}
 
 	@Test
@@ -343,9 +342,9 @@ public class HierarchyUtilsTest {
 	@Test
 	public void testRebase() {
 		Stream<Node> nodes = fourGroupsHierarchy.getRoot().getChildren().stream();
-		String oldId = GEN_0_0;
+		String oldId = NODE_ID_GEN_0_0;
 		List<BasicNode> destNodes = new ArrayList<>();
-		HierarchyUtils.rebase(nodes, oldId, GEN_0, destNodes, true);
+		HierarchyUtils.rebase(nodes, oldId, NODE_ID_GEN_0, destNodes, true);
 		assertTrue(!destNodes.isEmpty());
 	}
 

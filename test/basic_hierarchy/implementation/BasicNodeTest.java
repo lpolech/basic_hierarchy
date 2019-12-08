@@ -1,5 +1,6 @@
 package basic_hierarchy.implementation;
 
+import static basic_hierarchy.TestConst.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -19,11 +20,7 @@ import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
 
 public class BasicNodeTest {
-	private static final String THIRD = "third";
-	private static final String SECOND = "second";
-	private static final String FIRST = "first";
-	private static final String NOWEID = "noweid";
-	private static final String GEN_0_2 = "gen.0.2";
+
 	private BasicNode node;
 	private BasicNode child;
 	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -47,15 +44,15 @@ public class BasicNodeTest {
 		String firstChildNodeId = HierarchyUtils.getIDOfChildCluster(nodeId, 0);
 
 		LinkedList<Instance> instances = new LinkedList<>();
-		instances.add(new BasicInstance(FIRST, nodeId, new double[] { 0.0, 0.5 }, null));
-		instances.add(new BasicInstance(SECOND, nodeId, new double[] { 1.5, 2.0 }, null));
-		instances.add(new BasicInstance(THIRD, nodeId, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(FIRST_INSTANCE_NAME, nodeId, new double[] { 0.0, 0.5 }, null));
+		instances.add(new BasicInstance(SECOND_INSTANCE_NAME, nodeId, new double[] { 1.5, 2.0 }, null));
+		instances.add(new BasicInstance(THIRD_INSTANCE_NAME, nodeId, new double[] { 0.0, 0.5 }, null));
 
 		LinkedList<Instance> childInstances = new LinkedList<>();
-		childInstances.add(new BasicInstance(FIRST, firstChildNodeId, new double[] { 0.3, -0.5 }, null));
-		childInstances.add(new BasicInstance(SECOND, firstChildNodeId, new double[] { 2.7, -2.0 }, null));
-		childInstances.add(new BasicInstance(THIRD, firstChildNodeId, new double[] { -4.0, 0.0 }, null));
-		childInstances.add(new BasicInstance("fourth", firstChildNodeId, new double[] { 0.0, -1.5 }, null));
+		childInstances.add(new BasicInstance(FIRST_INSTANCE_NAME, firstChildNodeId, new double[] { 0.3, -0.5 }, null));
+		childInstances.add(new BasicInstance(SECOND_INSTANCE_NAME, firstChildNodeId, new double[] { 2.7, -2.0 }, null));
+		childInstances.add(new BasicInstance(THIRD_INSTANCE_NAME, firstChildNodeId, new double[] { -4.0, 0.0 }, null));
+		childInstances.add(new BasicInstance(FOURTH_INSTANCE_NAME, firstChildNodeId, new double[] { 0.0, -1.5 }, null));
 
 		node = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), instances, false);
 		child = new BasicNode(firstChildNodeId, node, new LinkedList<Node>(), childInstances, false);
@@ -92,7 +89,7 @@ public class BasicNodeTest {
 	@Test
 	public void testBasicNodeStringNodeInstance() {
 		BasicNode newNode = new BasicNode("nowe", node,
-				(new BasicInstance("fourth", "gen.0.0", new double[] { 0.0, -1.5 }, null)));
+				(new BasicInstance("fourth", NODE_ID_GEN_0_0, new double[] { 0.0, -1.5 }, null)));
 		assertEquals("nowe", newNode.getId());
 		assertEquals(0, newNode.getChildren().size());
 		assertEquals(0, newNode.getNodeInstances().size());
@@ -107,14 +104,14 @@ public class BasicNodeTest {
 
 	@Test
 	public void testSetParentId() {
-		child.setParentId(NOWEID);
-		assertEquals(NOWEID, node.getId());
+		child.setParentId(NEW_NODE_ID);
+		assertEquals(NEW_NODE_ID, node.getId());
 	}
 
 	@Test
 	public void testSetId() {
-		node.setId(NOWEID);
-		assertEquals(NOWEID, node.getId());
+		node.setId(NEW_NODE_ID);
+		assertEquals(NEW_NODE_ID, node.getId());
 	}
 
 	@Test
@@ -133,7 +130,7 @@ public class BasicNodeTest {
 	public void testAddChild() {
 		assertEquals(1, node.getChildren().size());
 		LinkedList<Instance> thirdInstances = new LinkedList<>();
-		thirdInstances.add(new BasicInstance(FIRST, GEN_0_2, new double[] { 0.3, -0.5 }, null));
+		thirdInstances.add(new BasicInstance(FIRST_INSTANCE_NAME, NODE_ID_GEN_0_2, new double[] { 0.3, -0.5 }, null));
 		BasicNode thirdNode = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), thirdInstances, false);
 		node.addChild(thirdNode);
 		assertEquals(2, node.getChildren().size());
@@ -142,14 +139,14 @@ public class BasicNodeTest {
 	@Test
 	public void testAddInstance() {
 		assertEquals(3, node.getNodeInstances().size());
-		node.addInstance(new BasicInstance(FIRST, GEN_0_2, new double[] { 0.3, -0.5 }, null));
+		node.addInstance(new BasicInstance(FIRST_INSTANCE_NAME, NODE_ID_GEN_0_2, new double[] { 0.3, -0.5 }, null));
 		assertEquals(4, node.getNodeInstances().size());
 	}
 
 	@Test
 	public void testSetInstances() {
 		LinkedList<Instance> thirdInstances = new LinkedList<>();
-		thirdInstances.add(new BasicInstance(FIRST, GEN_0_2, new double[] { 0.3, -0.5 }, null));
+		thirdInstances.add(new BasicInstance(FIRST_INSTANCE_NAME, NODE_ID_GEN_0_2, new double[] { 0.3, -0.5 }, null));
 		assertEquals(3, node.getNodeInstances().size());
 		node.setInstances(thirdInstances);
 		assertEquals(1, node.getNodeInstances().size());
@@ -159,7 +156,7 @@ public class BasicNodeTest {
 	@Test
 	public void testSetRepresentation() {
 		assertArrayEquals(new double[] { 0.5, 1 }, node.getNodeRepresentation().getData(), 0.0);
-		node.setRepresentation(new BasicInstance(FIRST, "Id", new double[] { 0.3, -0.5 }, null));
+		node.setRepresentation(new BasicInstance(FIRST_INSTANCE_NAME, "Id", new double[] { 0.3, -0.5 }, null));
 		assertArrayEquals(new double[] { 0.3, -0.5 }, node.getNodeRepresentation().getData(), 0.0);
 	}
 
@@ -207,7 +204,7 @@ public class BasicNodeTest {
 	@Test
 	public void testToString() {
 		LinkedList<Instance> thirdInstances = new LinkedList<>();
-		thirdInstances.add(new BasicInstance(FIRST, GEN_0_2, new double[] { 0.3, -0.5 }, null));
+		thirdInstances.add(new BasicInstance(FIRST_INSTANCE_NAME, NODE_ID_GEN_0_2, new double[] { 0.3, -0.5 }, null));
 		BasicNode thirdNode = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), thirdInstances, false);
 		node.addChild(thirdNode);
 		assertEquals("L--gen.0(3)|--gen.0.0(4)L--gen.0(1)", node.toString().replaceAll("\\s", ""));
@@ -216,7 +213,7 @@ public class BasicNodeTest {
 	@Test
 	public void testPrintSubtree() {
 		LinkedList<Instance> thirdInstances = new LinkedList<>();
-		thirdInstances.add(new BasicInstance(FIRST, GEN_0_2, new double[] { 0.3, -0.5 }, null));
+		thirdInstances.add(new BasicInstance(FIRST_INSTANCE_NAME, NODE_ID_GEN_0_2, new double[] { 0.3, -0.5 }, null));
 		BasicNode thirdNode = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), thirdInstances, false);
 		node.addChild(thirdNode);
 		node.printSubtree();

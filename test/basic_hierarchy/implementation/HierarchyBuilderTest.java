@@ -1,5 +1,14 @@
 package basic_hierarchy.implementation;
 
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0_1;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0_10;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0_11;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0_1_0;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_0_2;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_1;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_10_0;
+import static basic_hierarchy.TestConst.NODE_ID_GEN_0_2;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -16,7 +25,7 @@ import basic_hierarchy.common.Constants;
 import basic_hierarchy.common.HierarchyBuilder;
 
 public class HierarchyBuilderTest {
-	private static final String GEN_0_0_10 = "gen.0.0.10";
+
 	List<BasicNode> nodes;
 	BasicNode root;
 
@@ -27,7 +36,7 @@ public class HierarchyBuilderTest {
 		root = new BasicNode(Constants.ROOT_ID, null, false);
 
 		nodes.add(root);
-		nodes.add(new BasicNode(GEN_0_0_10, null, false));
+		nodes.add(new BasicNode(NODE_ID_GEN_0_0_10, null, false));
 		nodes.add(new BasicNode("gen.0.0.11.3", null, false));
 		nodes.add(new BasicNode("gen.0.0.11.5", null, false));
 	}
@@ -42,7 +51,7 @@ public class HierarchyBuilderTest {
 	@Test
 	public void idOrdering() {
 		// Test that the sorting algorithm works as we expect it to.
-		String[] expected = { "gen.0.0.1", "gen.0.0.1.0", "gen.0.0.2", GEN_0_0_10, "gen.0.1", "gen.0.2", "gen.0.10.0" };
+		String[] expected = { NODE_ID_GEN_0_0_1, NODE_ID_GEN_0_0_1_0, NODE_ID_GEN_0_0_2, NODE_ID_GEN_0_0_10, NODE_ID_GEN_0_1, NODE_ID_GEN_0_2, NODE_ID_GEN_0_10_0 };
 
 		String[] sorted = Arrays.copyOf(expected, expected.length);
 		Arrays.sort(sorted, new AlphanumComparator());
@@ -62,10 +71,10 @@ public class HierarchyBuilderTest {
 		// Assert that no unexpected nodes have been created
 		Assert.assertEquals(2, artificial.size());
 
-		BasicNode artificial0 = findNodeWithId(artificial, "gen.0.0");
-		BasicNode artificial1 = findNodeWithId(artificial, "gen.0.0.11");
+		BasicNode artificial0 = findNodeWithId(artificial, NODE_ID_GEN_0_0);
+		BasicNode artificial1 = findNodeWithId(artificial, NODE_ID_GEN_0_0_11);
 
-		BasicNode leaf0 = findNodeWithId(nodes, GEN_0_0_10);
+		BasicNode leaf0 = findNodeWithId(nodes, NODE_ID_GEN_0_0_10);
 		BasicNode leaf1 = findNodeWithId(nodes, "gen.0.0.11.3");
 		BasicNode leaf2 = findNodeWithId(nodes, "gen.0.0.11.5");
 
@@ -123,14 +132,14 @@ public class HierarchyBuilderTest {
 		// - gen.0.0.11.4
 		List<BasicNode> artificialBreadth = HierarchyBuilder.fixBreadthGaps(root, false);
 
-		BasicNode artificial1 = findNodeWithId(artificialDepth, "gen.0.0.11");
+		BasicNode artificial1 = findNodeWithId(artificialDepth, NODE_ID_GEN_0_0_11);
 
 		Assert.assertEquals(14, artificialBreadth.size());
 
 		// Compiling under Java 7, can't use lambdas...
 		List<BasicNode> gen11 = new ArrayList<>();
 		for (BasicNode n : artificialBreadth) {
-			if (n.getId().startsWith("gen.0.0.11."))
+			if (n.getId().startsWith(NODE_ID_GEN_0_0_11))
 				gen11.add(n);
 		}
 

@@ -1,5 +1,6 @@
 package basic_hierarchy.implementation;
 
+import static basic_hierarchy.TestConst.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -7,11 +8,10 @@ import org.junit.Test;
 
 public class BasicInstanceTest {
 
-	private static final String GEN_0 = "gen.0";
 	BasicInstance basIn;
 
 	public BasicInstanceTest() {
-		basIn = new BasicInstance("inst", GEN_0, new double[] { 0.0, 0.5 }, null);
+		basIn = new BasicInstance("inst", NODE_ID_GEN_0, new double[] { 0.0, 0.5 }, null);
 	}
 
 	@Test
@@ -40,14 +40,14 @@ public class BasicInstanceTest {
 
 	@Test
 	public void testGetNodeId() {
-		assertEquals(GEN_0, basIn.getNodeId());
+		assertEquals(NODE_ID_GEN_0, basIn.getNodeId());
 	}
 
 	@Test
 	public void testSetNodeId() {
-		assertEquals(GEN_0, basIn.getNodeId());
-		basIn.setNodeId("noweId");
-		assertEquals("noweId", basIn.getNodeId());
+		assertEquals(NODE_ID_GEN_0, basIn.getNodeId());
+		basIn.setNodeId(NEW_NODE_ID);
+		assertEquals(NEW_NODE_ID, basIn.getNodeId());
 	}
 
 	@Test
