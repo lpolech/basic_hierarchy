@@ -8,6 +8,9 @@ import basic_hierarchy.interfaces.Hierarchy;
 import basic_hierarchy.interfaces.Instance;
 import basic_hierarchy.interfaces.Node;
 import basic_hierarchy.test.TestCommon;
+import data.Cluster;
+import data.ClustersAndTheirStatistics;
+import data.DataPoint;
 
 
 public class BasicHierarchy implements Hierarchy
@@ -20,6 +23,37 @@ public class BasicHierarchy implements Hierarchy
     private String[] dataNames;
 
 
+    public BasicHierarchy(Cluster[] flatClusters) {
+        Node artificialRoot = new BasicNode(Constants.ROOT_ID, null, new LinkedList<Node>(), new LinkedList<Instance>(), false);
+
+        LinkedList<Node> groups = new LinkedList<>();
+        groups.add(artificialRoot);
+        int nodesCounter = 0;
+        int instancesCounter = 0;
+
+        for(Cluster cls: flatClusters) {
+            Instance centroid = new BasicInstance( cls.getCenter().getInstanceName(), String.valueOf(cls.getClusterId()),
+                                                    cls.getCenter().getCoordinates(), cls.getCenter().getClassAttribute());
+            Node nodeToAdd = new BasicNode(TestCommon.getIDOfChildCluster(Constants.ROOT_ID, nodesCounter), artificialRoot,
+                    new LinkedList<Node>(), new LinkedList<Instance>(), centroid);
+
+            for(DataPoint point: cls.getPoints()) {
+                nodeToAdd.addInstance(new BasicInstance(point.getInstanceName(), nodeToAdd.getId(), point.getCoordinates(),
+                                                        point.getClassAttribute()));
+                instancesCounter = instancesCounter + 1;
+            }
+            groups.add(nodeToAdd);
+            artificialRoot.addChild(nodeToAdd);
+            nodesCounter = nodesCounter + 1;
+        }
+
+        this.root = artificialRoot;
+        this.groups = groups.toArray( new Node[groups.size()] );
+        this.classes = null;
+        this.classCounts = null;
+        this.overallNumberOfInstances = instancesCounter;
+        this.dataNames = null;
+    }
     /**
      * Creates a new hierarchy object. This constructor infers all other parameters from
      * the list of nodes. As such, it is required that the nodes in the list contain all
